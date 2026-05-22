@@ -22,6 +22,10 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'phone_number', // Pastikan ini ada
+        'role',         // Pastikan ini ada
+        'status',       // Pastikan ini ada
+        'address',      // Pastikan ini ada
     ];
 
     /**
@@ -45,5 +49,10 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function pets()
+    {
+        return $this->hasMany(Pet::class, 'owner_id');
     }
 }
