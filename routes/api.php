@@ -10,6 +10,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\Api\PharmacyController;
+use App\Http\Controllers\SupplierController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -42,3 +43,5 @@ Route::prefix('pharmacy')->group(function () {
 
     Route::get('/inventory-summary', [PharmacyController::class, 'inventorySummary']);
 });
+
+Route::apiResource('suppliers', SupplierController::class);
