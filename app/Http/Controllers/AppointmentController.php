@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Appointment;
+use App\Models\Pet;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class AppointmentController extends Controller
 {
@@ -54,9 +56,14 @@ class AppointmentController extends Controller
      */
     public function store(Request $request)
     {
+        $ownerId = $request->input('owner_id');
+
         $validator = Validator::make($request->all(), [
             'owner_id'          => 'required|exists:users,id',
-            'pet_id'            => 'required|exists:pets,id',
+            'pet_id'            => [
+                'required',
+                Rule::exists('pets', 'id')->where('owner_id', $ownerId),
+            ],
             'service_id'        => 'required|exists:services,id',
             'booking_type'      => 'required|in:Online,Walk-in',
             'schedule_date'     => 'required|date',
