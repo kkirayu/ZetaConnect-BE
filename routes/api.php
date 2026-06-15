@@ -9,6 +9,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\Api\PharmacyController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -26,11 +27,18 @@ Route::patch('payments/{id}/refund', [PaymentController::class, 'refund']);
 Route::get('/auth/google', [AuthController::class, 'redirectToGoogle']);
 Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback']);
 
+
+
 Route::prefix('pharmacy')->group(function () {
 
-    Route::get('/dashboard', [PharmacyDashboardController::class, 'dashboard']);
+    Route::get('/dashboard', [PharmacyController::class, 'dashboard']);
 
-    Route::get('/low-stock', [PharmacyDashboardController::class, 'lowStock']);
+    Route::get('/low-stock', [PharmacyController::class, 'lowStock']);
 
-    Route::get('/patient-demographics', [PharmacyDashboardController::class, 'patientDemographics']);
+    Route::get('/patient-demographics', [PharmacyController::class, 'patientDemographics']);
+
+    // Opsional
+    Route::get('/expiring-products', [PharmacyController::class, 'expiringProducts']);
+
+    Route::get('/inventory-summary', [PharmacyController::class, 'inventorySummary']);
 });
