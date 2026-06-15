@@ -11,6 +11,8 @@ use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\Api\PharmacyController;
 use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\ClinicSettingController;
+use App\Http\Controllers\ReportController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -23,6 +25,15 @@ Route::apiResource('services', ServiceController::class)->except(['create', 'edi
 Route::apiResource('invoices', InvoiceController::class)->except(['create', 'edit']);
 Route::apiResource('payments', PaymentController::class)->except(['create', 'edit', 'update']);
 Route::patch('payments/{id}/refund', [PaymentController::class, 'refund']);
+
+Route::get('clinic-settings', [ClinicSettingController::class, 'index']);
+Route::post('clinic-settings', [ClinicSettingController::class, 'update']);
+
+Route::prefix('reports')->group(function () {
+    Route::get('financial', [ReportController::class, 'financial']);
+    Route::get('demographics', [ReportController::class, 'demographics']);
+    Route::get('stock-mutation', [ReportController::class, 'stockMutation']);
+});
 
 // Google OAuth Routes
 Route::get('/auth/google', [AuthController::class, 'redirectToGoogle']);
