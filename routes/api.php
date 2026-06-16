@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\PharmacyController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\ClinicSettingController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\AuditLogController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -34,6 +35,8 @@ Route::prefix('reports')->group(function () {
     Route::get('demographics', [ReportController::class, 'demographics']);
     Route::get('stock-mutation', [ReportController::class, 'stockMutation']);
 });
+
+Route::get('/audit-logs', [AuditLogController::class, 'index']);
 
 // Google OAuth Routes
 Route::get('/auth/google', [AuthController::class, 'redirectToGoogle']);

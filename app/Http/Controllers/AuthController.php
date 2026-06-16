@@ -40,7 +40,7 @@ class AuthController extends Controller
                     'name' => $googleUser->name,
                     'email' => $googleUser->email,
                     'google_id' => $googleUser->id,
-                    'role' => 'Owner', // Default role for new google signups
+                    'role' => 'Owner',
                     'password' => null, // No password since they use Google
                     'phone_number' => null,
                     'address' => null,
