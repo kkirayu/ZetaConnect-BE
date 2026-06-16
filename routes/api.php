@@ -53,6 +53,10 @@ Route::prefix('pharmacy')->group(function () {
     Route::get('/expiring-products', [PharmacyController::class, 'expiringProducts']);
 
     Route::get('/inventory-summary', [PharmacyController::class, 'inventorySummary']);
+
+    // Stock Monitoring
+    Route::get('/products', [PharmacyController::class, 'products']);
+    Route::delete('/products/{id}', [PharmacyController::class, 'deleteProduct']);
 });
 
 Route::apiResource('suppliers', SupplierController::class);

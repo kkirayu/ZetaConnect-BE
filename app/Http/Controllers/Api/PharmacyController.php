@@ -191,4 +191,90 @@ class PharmacyController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Daftar semua produk untuk Stock Monitoring
+     */
+    public function products(Request $request)
+    {
+        try {
+            $query = Product::query();
+
+            // Filter pencarian berdasarkan nama atau kategori
+            if ($request->has('search') && $request->search !== '') {
+                $search = $request->search;
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('category', 'like', "%{$search}%");
+                });
+            }
+
+            $products = $query->orderBy('name', 'asc')->get();
+
+            // Mapping data dengan computed fields untuk frontend
+            $mapped = $products->map(function ($product) {
+                $isExpired = $product->exp_date && $product->exp_date < today();
+                $stockStatus = 'Tersedia';
+
+                if ($product->current_stock <= 0) {
+                    $stockStatus = 'Habis';
+                } elseif ($product->current_stock <= $product->min_stock) {
+                    $stockStatus = 'Hampir Habis';
+                }
+
+                return [
+                    'id'             => $product->id,
+                    'name'           => $product->name,
+                    'description'    => $product->description,
+                    'category'       => $product->category,
+                    'base_price'     => $product->base_price,
+                    'selling_price'  => $product->selling_price,
+                    'current_stock'  => $product->current_stock,
+                    'min_stock'      => $product->min_stock,
+                    'exp_date'       => $product->exp_date,
+                    'is_expired'     => $isExpired,
+                    'stock_status'   => $stockStatus,
+                ];
+            });
+
+            return response()->json($mapped);
+
+        } catch (\Exception $e) {
+
+            Log::error('Products List Error', [
+                'message' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'message' => 'Gagal mengambil data produk.',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Hapus produk
+     */
+    public function deleteProduct($id)
+    {
+        try {
+            $product = Product::findOrFail($id);
+            $product->delete();
+
+            return response()->json([
+                'message' => "Produk '{$product->name}' berhasil dihapus."
+            ]);
+
+        } catch (\Exception $e) {
+
+            Log::error('Delete Product Error', [
+                'message' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'message' => 'Gagal menghapus produk.',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
+    }
 }
