@@ -60,6 +60,10 @@ Route::prefix('pharmacy')->group(function () {
     // Stock Monitoring
     Route::get('/products', [PharmacyController::class, 'products']);
     Route::delete('/products/{id}', [PharmacyController::class, 'deleteProduct']);
+
+    // Prescriptions
+    Route::get('/prescriptions', [PharmacyController::class, 'prescriptions']);
+    Route::patch('/prescriptions/{medicalRecordId}/status', [PharmacyController::class, 'updatePrescriptionStatus']);
 });
 
 Route::apiResource('suppliers', SupplierController::class);
