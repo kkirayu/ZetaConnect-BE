@@ -20,7 +20,7 @@ class AuditLogController extends Controller
 
             return [
                 'id' => $activity->id,
-                'timestamp' => $activity->created_at->format('d M Y, H:i') . ' WIB',
+                'timestamp' => $activity->created_at->timezone('Asia/Jakarta')->format('d M Y, H:i') . ' WIB',
                 'user' => $user ? $user->name : 'Sistem',
                 'role' => $user ? ucfirst($user->role) : 'Sistem',
                 'action' => $action . ' pada ' . class_basename($activity->subject_type),
