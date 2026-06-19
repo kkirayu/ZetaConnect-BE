@@ -13,6 +13,7 @@ class Appointment extends Model
         'owner_id',
         'pet_id',
         'service_id',
+        'doctor_id',
         'booking_type',
         'schedule_date',
         'schedule_time',
@@ -34,5 +35,10 @@ class Appointment extends Model
     public function service()
     {
         return $this->belongsTo(Service::class, 'service_id');
+    }
+
+    public function doctor()
+    {
+        return $this->belongsTo(User::class, 'doctor_id');
     }
 }

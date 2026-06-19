@@ -14,6 +14,9 @@ use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\ClinicSettingController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\FeedbackController;
+use \App\Http\Controllers\DoctorController;
+use App\Http\Controllers\PetTipController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -38,23 +41,19 @@ Route::prefix('reports')->group(function () {
 
 Route::get('/audit-logs', [AuditLogController::class, 'index']);
 
-// Google OAuth Routes
+Route::post('/auth/register', [AuthController::class, 'register']);
+Route::post('/auth/verify-otp', [AuthController::class, 'verifyOtp']);
+
 Route::get('/auth/google', [AuthController::class, 'redirectToGoogle']);
 Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback']);
 
-
+Route::post('/auth/login', [AuthController::class, 'login']);
 
 Route::prefix('pharmacy')->group(function () {
-
     Route::get('/dashboard', [PharmacyController::class, 'dashboard']);
-
     Route::get('/low-stock', [PharmacyController::class, 'lowStock']);
-
     Route::get('/patient-demographics', [PharmacyController::class, 'patientDemographics']);
-
-    // Opsional
     Route::get('/expiring-products', [PharmacyController::class, 'expiringProducts']);
-
     Route::get('/inventory-summary', [PharmacyController::class, 'inventorySummary']);
 
     // Stock Monitoring
@@ -67,3 +66,9 @@ Route::prefix('pharmacy')->group(function () {
 });
 
 Route::apiResource('suppliers', SupplierController::class);
+
+Route::post('/feedbacks', [FeedbackController::class, 'store']);
+Route::get('/feedbacks', [FeedbackController::class, 'index']);
+
+Route::apiResource('doctors', DoctorController::class);
+Route::apiResource('pet-tips', PetTipController::class);
