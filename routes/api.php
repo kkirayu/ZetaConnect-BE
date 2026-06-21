@@ -39,15 +39,18 @@ Route::prefix('reports')->group(function () {
     Route::get('stock-mutation', [ReportController::class, 'stockMutation']);
 });
 
+Route::prefix('auth')->group(function(){
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
+    Route::get('/google', [AuthController::class, 'redirectToGoogle']);
+    Route::get('/google/callback', [AuthController::class, 'handleGoogleCallback']);
+    Route::post('/login', [AuthController::class, 'login']);
+});
+
+Route::apiResource('pet-tips', PetTipController::class);
+Route::apiResource('feedbacks', FeedbackController::class);
+
 Route::get('/audit-logs', [AuditLogController::class, 'index']);
-
-Route::post('/auth/register', [AuthController::class, 'register']);
-Route::post('/auth/verify-otp', [AuthController::class, 'verifyOtp']);
-
-Route::get('/auth/google', [AuthController::class, 'redirectToGoogle']);
-Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback']);
-
-Route::post('/auth/login', [AuthController::class, 'login']);
 
 Route::prefix('pharmacy')->group(function () {
     Route::get('/dashboard', [PharmacyController::class, 'dashboard']);
@@ -67,8 +70,4 @@ Route::prefix('pharmacy')->group(function () {
 
 Route::apiResource('suppliers', SupplierController::class);
 
-Route::post('/feedbacks', [FeedbackController::class, 'store']);
-Route::get('/feedbacks', [FeedbackController::class, 'index']);
-
 Route::apiResource('doctors', DoctorController::class);
-Route::apiResource('pet-tips', PetTipController::class);

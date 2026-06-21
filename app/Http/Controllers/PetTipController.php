@@ -37,3 +37,4 @@ class PetTipController extends Controller
         ], 201);
     }
 }
+
