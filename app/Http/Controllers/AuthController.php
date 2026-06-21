@@ -33,7 +33,7 @@ class AuthController extends Controller
                     'name' => $googleUser->name,
                     'email' => $googleUser->email,
                     'google_id' => $googleUser->id,
-                    'role' => 'Owner', 
+                    'role' => 'Pemilik Hewan', 
                     'password' => null, 
                     'phone_number' => null,
                     'address' => null,
