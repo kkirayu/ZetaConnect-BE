@@ -1,65 +1,78 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
-use App\Models\EPrescription;
-use Illuminate\Http\Request;
+use App\Http\Requests\StoreEPrescriptionRequest;
+use App\Http\Requests\UpdateEPrescriptionRequest;
+use App\Http\Resources\EPrescriptionResource;
+use App\Services\EPrescriptionService;
+use Illuminate\Http\JsonResponse;
 
 class EPrescriptionController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function __construct(private EPrescriptionService $service)
     {
-        //
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function index(): JsonResponse
     {
-        //
+        $prescriptions = $this->service->getAll();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Daftar e-resep berhasil diambil',
+            'data' => EPrescriptionResource::collection($prescriptions),
+            'pagination' => [
+                'current_page' => $prescriptions->currentPage(),
+                'per_page' => $prescriptions->perPage(),
+                'total' => $prescriptions->total(),
+                'last_page' => $prescriptions->lastPage(),
+            ],
+        ], 200);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(StoreEPrescriptionRequest $request): JsonResponse
     {
-        //
+        $prescription = $this->service->create($request->validated());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'E-resep berhasil dibuat',
+            'data' => new EPrescriptionResource($prescription),
+        ], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(EPrescription $ePrescription)
+    public function show(int $id): JsonResponse
     {
-        //
+        $prescription = $this->service->getById($id);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Detail e-resep berhasil diambil',
+            'data' => new EPrescriptionResource($prescription),
+        ], 200);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(EPrescription $ePrescription)
+    public function update(UpdateEPrescriptionRequest $request, int $id): JsonResponse
     {
-        //
+        $prescription = $this->service->update($id, $request->validated());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'E-resep berhasil diperbarui',
+            'data' => new EPrescriptionResource($prescription),
+        ], 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, EPrescription $ePrescription)
+    public function destroy(int $id): JsonResponse
     {
-        //
-    }
+        $this->service->delete($id);
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(EPrescription $ePrescription)
-    {
-        //
+        return response()->json([
+            'success' => true,
+            'message' => 'E-resep berhasil dihapus',
+        ], 200);
     }
 }

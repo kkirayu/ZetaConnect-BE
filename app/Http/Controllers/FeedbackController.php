@@ -18,7 +18,7 @@ class FeedbackController extends Controller
         ]);
 
         $feedback = Feedback::create([
-            'user_id' => Auth::guard('sanctum')->id(), // Can be null if not logged in
+            'user_id' => Auth::guard('sanctum')->id(), 
             'name' => $request->name,
             'phone' => $request->phone,
             'type' => $request->type,
@@ -33,7 +33,6 @@ class FeedbackController extends Controller
 
     public function index()
     {
-        // For admin to view feedbacks, optionally included
         $feedbacks = Feedback::with('user')->orderBy('created_at', 'desc')->get();
         return response()->json($feedbacks);
     }
