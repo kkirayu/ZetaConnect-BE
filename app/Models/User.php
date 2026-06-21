@@ -26,10 +26,11 @@ class User extends Authenticatable
         'email',
         'google_id',
         'password',
-        'phone_number', // Pastikan ini ada
-        'role',         // Pastikan ini ada
-        'status',       // Pastikan ini ada
-        'address',      // Pastikan ini ada
+        'phone_number', 
+        'role',         
+        'status',       
+        'address',
+        'otp_code',
     ];
 
     /**

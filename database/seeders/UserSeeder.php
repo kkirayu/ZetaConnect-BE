@@ -8,28 +8,43 @@ use Illuminate\Database\Seeder;
 class UserSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
      */
     public function run(): void
-{
-    \App\Models\User::create([
-        'name' => 'Muhammad Danil',
-        'email' => 'danil@zeta.com',
-        'password' => bcrypt('password123'),
-        'phone_number' => '08123456789',
-        'role' => 'Admin', 
-        'status' => 'Aktif',
-        'address' => 'Yogyakarta',
-    ]);
+    {
+        \App\Models\User::updateOrCreate(
+            ['email' => 'danil@zeta.com'],
+            [
+                'name' => 'Muhammad Danil',
+                'password' => bcrypt('password123'),
+                'phone_number' => '08123456789',
+                'role' => 'Admin', 
+                'status' => 'Aktif',
+                'address' => 'Yogyakarta',
+            ]
+        );
 
-    \App\Models\User::create([
-        'name' => 'Dr. Budi Santoso',
-        'email' => 'budi@zeta.com',
-        'password' => bcrypt('password123'),
-        'phone_number' => '08987654321',
-        'role' => 'Dokter',
-        'status' => 'Aktif',
-        'address' => 'Sleman, DIY',
-    ]);
-}
+        \App\Models\User::updateOrCreate(
+            ['email' => 'budi@zeta.com'],
+            [
+                'name' => 'Dr. Budi Santoso',
+                'password' => bcrypt('password123'),
+                'phone_number' => '08987654321',
+                'role' => 'Dokter',
+                'status' => 'Aktif',
+                'address' => 'Sleman, DIY',
+            ]
+        );
+
+        \App\Models\User::updateOrCreate(
+            ['email' => 'pasien@zeta.com'],
+            [
+                'name' => 'Pasien Pemilik',
+                'password' => bcrypt('password123'),
+                'phone_number' => '08111222333',
+                'role' => 'Owner',
+                'status' => 'Aktif',
+                'address' => 'Bantul, DIY',
+            ]
+        );
+    }
 }
