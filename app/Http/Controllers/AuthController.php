@@ -25,6 +25,11 @@ class AuthController extends Controller
             $user = User::where('email', $googleUser->email)->first();
 
             if ($user) {
+                if ($user->role !== 'Owner' && $user->role !== 'Pemilik Hewan') {
+                    $frontendUrl = env('FRONTEND_URL', 'http://localhost:3000');
+                    return redirect($frontendUrl . '/login?error=google_auth_not_owner');
+                }
+                
                 if (!$user->google_id) {
                     $user->update(['google_id' => $googleUser->id]);
                 }
@@ -33,7 +38,7 @@ class AuthController extends Controller
                     'name' => $googleUser->name,
                     'email' => $googleUser->email,
                     'google_id' => $googleUser->id,
-                    'role' => 'Pemilik Hewan', 
+                    'role' => 'Owner', 
                     'password' => null, 
                     'phone_number' => null,
                     'address' => null,
@@ -71,7 +76,7 @@ class AuthController extends Controller
             'password' => \Illuminate\Support\Facades\Hash::make($request->password),
             'phone_number' => $request->phone_number,
             'address' => $request->address,
-            'role' => $request->role ?? 'Pemilik Hewan',
+            'role' => $request->role ?? 'Owner',
             'status' => 'Tidak Aktif',
             'otp_code' => $otp
         ]);
@@ -115,7 +120,6 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
-        // Cek apakah inputnya format email atau bukan
         $loginType = filter_var($request->username, FILTER_VALIDATE_EMAIL) ? 'email' : 'name';
 
         $credentials = [
