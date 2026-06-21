@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class MedicalRecord extends Model
 {
@@ -10,11 +14,17 @@ class MedicalRecord extends Model
         'appointment_id',
         'pet_id',
         'doctor_id',
+        'diagnosis_dictionary_id',
         'subjective',
         'objective',
-        'assessment',
         'plan',
         'weight',
+    ];
+
+    protected $casts = [
+        'weight' => 'decimal:2',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     public function pet()
@@ -40,5 +50,15 @@ class MedicalRecord extends Model
     public function inpatientRecord()
     {
         return $this->hasOne(InpatientRecord::class);
+    }
+
+    public function diagnosis(): BelongsTo
+    {
+        return $this->belongsTo(DiagnosisDictionary::class, 'diagnosis_dictionary_id');
+    }
+
+    public function labResults(): HasMany
+    {
+        return $this->hasMany(LabResult::class);
     }
 }
