@@ -1,12 +1,5 @@
 <?php
 
-/**
- * @OA\Server(
- * url="http://localhost:8000",
- * description="Local Server"
- * )
- */
-
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 

@@ -1,3 +1,970 @@
 {
-    "openapi": "3.0.0"
+    "openapi": "3.0.0",
+    "info": {
+        "title": "ZetaConnect API Documentation",
+        "description": "Integrated ZetaConnect API for veterinary clinic management system",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000/api",
+            "description": "Local Development Server"
+        }
+    ],
+    "paths": {
+        "/doctor/diagnoses": {
+            "post": {
+                "tags": [
+                    "Diagnosis"
+                ],
+                "summary": "Create diagnosis",
+                "operationId": "4af898c1a31853a5f7a11a3edac9da50",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "disease_name"
+                                ],
+                                "properties": {
+                                    "disease_name": {
+                                        "type": "string",
+                                        "example": "Parvovirus"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Infeksi virus yang menyerang saluran pencernaan"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "201": {
+                        "description": "Created"
+                    },
+                    "422": {
+                        "description": "Validation Error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/doctor/diagnoses/{id}": {
+            "put": {
+                "tags": [
+                    "Diagnosis"
+                ],
+                "summary": "Update diagnosis",
+                "operationId": "46ccc1894cb5cf56e3523cd151d50ce8",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "disease_name": {
+                                        "type": "string",
+                                        "example": "Parvovirus"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Infeksi virus yang menyerang saluran pencernaan"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "201": {
+                        "description": "Created"
+                    },
+                    "422": {
+                        "description": "Validation Error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/doctor/e-receipts": {
+            "post": {
+                "tags": [
+                    "E Receipt"
+                ],
+                "summary": "Create e-receipt with medicines",
+                "operationId": "23edad0f265bef81dbf467432331e709",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "pet_id",
+                                    "items"
+                                ],
+                                "properties": {
+                                    "pet_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "doctor_instructions": {
+                                        "type": "string",
+                                        "example": "Minum sesudah makan"
+                                    },
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "required": [
+                                                "medicine_name",
+                                                "dosage",
+                                                "frequency",
+                                                "quantity"
+                                            ],
+                                            "properties": {
+                                                "medicine_name": {
+                                                    "type": "string",
+                                                    "example": "Amoxicillin"
+                                                },
+                                                "dosage": {
+                                                    "type": "string",
+                                                    "example": "1 kapsul"
+                                                },
+                                                "frequency": {
+                                                    "type": "string",
+                                                    "example": "2x sehari"
+                                                },
+                                                "quantity": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "201": {
+                        "description": "Created"
+                    },
+                    "422": {
+                        "description": "Validation Error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/doctor/e-receipts/{id}": {
+            "put": {
+                "tags": [
+                    "E Receipt"
+                ],
+                "summary": "Update e-receipt with medicines",
+                "operationId": "fd5133a3c857f4397d3c401d3987ec51",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "pet_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "doctor_instructions": {
+                                        "type": "string",
+                                        "example": "Minum sesudah makan"
+                                    },
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "required": [
+                                                "medicine_name",
+                                                "dosage",
+                                                "frequency",
+                                                "quantity"
+                                            ],
+                                            "properties": {
+                                                "medicine_name": {
+                                                    "type": "string",
+                                                    "example": "Amoxicillin"
+                                                },
+                                                "dosage": {
+                                                    "type": "string",
+                                                    "example": "1 kapsul"
+                                                },
+                                                "frequency": {
+                                                    "type": "string",
+                                                    "example": "2x sehari"
+                                                },
+                                                "quantity": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "201": {
+                        "description": "Created"
+                    },
+                    "422": {
+                        "description": "Validation Error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/doctor/lab-results": {
+            "post": {
+                "tags": [
+                    "Lab Result"
+                ],
+                "summary": "Upload lab result document",
+                "operationId": "d827fa028c0ec410d263b87a4ebc05e6",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "pet_id",
+                                    "document_type",
+                                    "document_file"
+                                ],
+                                "properties": {
+                                    "pet_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "document_type": {
+                                        "type": "string",
+                                        "example": "Hematology"
+                                    },
+                                    "document_file": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "201": {
+                        "description": "Created"
+                    },
+                    "422": {
+                        "description": "Validation Error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/doctor/lab-results/{id}": {
+            "put": {
+                "tags": [
+                    "Lab Result"
+                ],
+                "summary": "Update lab result document",
+                "operationId": "fa93d1ac49c7ebc7031889170187e502",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "pet_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "document_type": {
+                                        "type": "string",
+                                        "example": "Hematology"
+                                    },
+                                    "document_file": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "201": {
+                        "description": "Created"
+                    },
+                    "422": {
+                        "description": "Validation Error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/doctor/medical-certificates": {
+            "post": {
+                "tags": [
+                    "Medical Certificate"
+                ],
+                "summary": "Create medical certificate",
+                "operationId": "66eb95c5dd10de7892e91cdfa1b9cf30",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "pet_id",
+                                    "rest_duration",
+                                    "start_date"
+                                ],
+                                "properties": {
+                                    "pet_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "rest_duration": {
+                                        "type": "integer",
+                                        "example": 7
+                                    },
+                                    "start_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-06-12"
+                                    },
+                                    "additional_notes": {
+                                        "type": "string",
+                                        "example": "Kontrol ulang setelah masa istirahat"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "201": {
+                        "description": "Created"
+                    },
+                    "422": {
+                        "description": "Validation Error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/doctor/medical-certificates/{id}": {
+            "put": {
+                "tags": [
+                    "Medical Certificate"
+                ],
+                "summary": "Update medical certificate",
+                "operationId": "04665e46df53c5ef6e57993606851d50",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "pet_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "rest_duration": {
+                                        "type": "integer",
+                                        "example": 7
+                                    },
+                                    "start_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-06-12"
+                                    },
+                                    "additional_notes": {
+                                        "type": "string",
+                                        "example": "Kontrol ulang setelah masa istirahat"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "201": {
+                        "description": "Created"
+                    },
+                    "422": {
+                        "description": "Validation Error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/doctor/medical-records": {
+            "post": {
+                "tags": [
+                    "Medical Record"
+                ],
+                "summary": "Create SOAP medical record",
+                "operationId": "527dcb78838b571c8cf688e53d1ef876",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "pet_id",
+                                    "weight",
+                                    "subjective",
+                                    "objective",
+                                    "diagnosis_dictionary_id",
+                                    "plan"
+                                ],
+                                "properties": {
+                                    "pet_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "weight": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 4.25
+                                    },
+                                    "subjective": {
+                                        "type": "string",
+                                        "example": "Nafsu makan menurun"
+                                    },
+                                    "objective": {
+                                        "type": "string",
+                                        "example": "Suhu tubuh 39.2 C"
+                                    },
+                                    "diagnosis_dictionary_id": {
+                                        "type": "integer",
+                                        "example": 3
+                                    },
+                                    "plan": {
+                                        "type": "string",
+                                        "example": "Berikan antibiotik 5 hari dan kontrol ulang"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "201": {
+                        "description": "Created"
+                    },
+                    "422": {
+                        "description": "Validation Error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/doctor/medical-records/{id}": {
+            "put": {
+                "tags": [
+                    "Medical Record"
+                ],
+                "summary": "Update SOAP medical record",
+                "operationId": "4c92616865b1b46f4675274ad2ed70b4",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "pet_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "weight": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 4.25
+                                    },
+                                    "subjective": {
+                                        "type": "string",
+                                        "example": "Nafsu makan menurun"
+                                    },
+                                    "objective": {
+                                        "type": "string",
+                                        "example": "Suhu tubuh 39.2 C"
+                                    },
+                                    "diagnosis_dictionary_id": {
+                                        "type": "integer",
+                                        "example": 3
+                                    },
+                                    "plan": {
+                                        "type": "string",
+                                        "example": "Berikan antibiotik 5 hari dan kontrol ulang"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "201": {
+                        "description": "Created"
+                    },
+                    "422": {
+                        "description": "Validation Error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/doctor/surgeries": {
+            "post": {
+                "tags": [
+                    "Surgery"
+                ],
+                "summary": "Create surgery report",
+                "operationId": "1b613cce4ade7189f04eb3b6195b9964",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "pet_id",
+                                    "surgery_type"
+                                ],
+                                "properties": {
+                                    "pet_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "surgery_type": {
+                                        "type": "string",
+                                        "example": "Sterilisasi"
+                                    },
+                                    "anesthesia_notes": {
+                                        "type": "string",
+                                        "example": "Anestesi inhalasi"
+                                    },
+                                    "post_op_instructions": {
+                                        "type": "string",
+                                        "example": "Istirahat 7 hari dan kontrol ulang"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "201": {
+                        "description": "Created"
+                    },
+                    "422": {
+                        "description": "Validation Error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/doctor/surgeries/{id}": {
+            "put": {
+                "tags": [
+                    "Surgery"
+                ],
+                "summary": "Update surgery report",
+                "operationId": "683c189156142818801693a8888e1d95",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "pet_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "surgery_type": {
+                                        "type": "string",
+                                        "example": "Sterilisasi"
+                                    },
+                                    "anesthesia_notes": {
+                                        "type": "string",
+                                        "example": "Anestesi inhalasi"
+                                    },
+                                    "post_op_instructions": {
+                                        "type": "string",
+                                        "example": "Istirahat 7 hari dan kontrol ulang"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "201": {
+                        "description": "Created"
+                    },
+                    "422": {
+                        "description": "Validation Error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/ping": {
+            "get": {
+                "tags": [
+                    "System"
+                ],
+                "summary": "Ping server",
+                "operationId": "fbc9847cad703c9e0d3f77b36a7d4590",
+                "responses": {
+                    "200": {
+                        "description": "Server is alive",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "message": "pong"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/doctor/vaccinations": {
+            "post": {
+                "tags": [
+                    "Vaccination"
+                ],
+                "summary": "Create vaccination record",
+                "operationId": "e0b9a8f96a406648408d81ebe14f0bd6",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "pet_id",
+                                    "vaccine_name"
+                                ],
+                                "properties": {
+                                    "pet_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "vaccine_name": {
+                                        "type": "string",
+                                        "example": "Rabies"
+                                    },
+                                    "batch_number": {
+                                        "type": "string",
+                                        "example": "RB-2026-001"
+                                    },
+                                    "next_due_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-12-12"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "201": {
+                        "description": "Created"
+                    },
+                    "422": {
+                        "description": "Validation Error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/doctor/vaccinations/{id}": {
+            "put": {
+                "tags": [
+                    "Vaccination"
+                ],
+                "summary": "Update vaccination record",
+                "operationId": "688c1c0bdfff23ba3106b020068d5225",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "pet_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "vaccine_name": {
+                                        "type": "string",
+                                        "example": "Rabies"
+                                    },
+                                    "batch_number": {
+                                        "type": "string",
+                                        "example": "RB-2026-001"
+                                    },
+                                    "next_due_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-12-12"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "201": {
+                        "description": "Created"
+                    },
+                    "422": {
+                        "description": "Validation Error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "name": "Authorization",
+                "in": "header",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Diagnosis",
+            "description": "Diagnosis"
+        },
+        {
+            "name": "E Receipt",
+            "description": "E Receipt"
+        },
+        {
+            "name": "Lab Result",
+            "description": "Lab Result"
+        },
+        {
+            "name": "Medical Certificate",
+            "description": "Medical Certificate"
+        },
+        {
+            "name": "Medical Record",
+            "description": "Medical Record"
+        },
+        {
+            "name": "Surgery",
+            "description": "Surgery"
+        },
+        {
+            "name": "System",
+            "description": "System"
+        },
+        {
+            "name": "Vaccination",
+            "description": "Vaccination"
+        }
+    ]
 }
