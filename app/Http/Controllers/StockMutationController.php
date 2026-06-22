@@ -10,17 +10,33 @@ class StockMutationController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $search = $request->search;
+
+        $query = StockMutation::query();
+
+        if ($search) {
+            $query->where('product_name', 'like', "%{$search}%")
+                  ->orWhere('mutation_type', 'like', "%{$search}%");
+        }
+
+        $mutations = $query
+            ->orderBy('date', 'desc')
+            ->get();
+
+        return response()->json($mutations);
     }
 
     /**
      * Show the form for creating a new resource.
+     * Tidak digunakan pada API.
      */
     public function create()
     {
-        //
+        return response()->json([
+            'message' => 'Method tidak digunakan untuk API'
+        ]);
     }
 
     /**
@@ -28,7 +44,21 @@ class StockMutationController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'product_id' => 'required|integer',
+            'product_name' => 'required|string|max:255',
+            'supplier_id' => 'nullable|integer',
+            'mutation_type' => 'required|in:In,Out',
+            'quantity' => 'required|integer|min:1',
+            'date' => 'required|date'
+        ]);
+
+        $mutation = StockMutation::create($validated);
+
+        return response()->json([
+            'message' => 'Mutasi stok berhasil ditambahkan',
+            'data' => $mutation
+        ], 201);
     }
 
     /**
@@ -36,15 +66,18 @@ class StockMutationController extends Controller
      */
     public function show(StockMutation $stockMutation)
     {
-        //
+        return response()->json($stockMutation);
     }
 
     /**
      * Show the form for editing the specified resource.
+     * Tidak digunakan pada API.
      */
     public function edit(StockMutation $stockMutation)
     {
-        //
+        return response()->json([
+            'message' => 'Method tidak digunakan untuk API'
+        ]);
     }
 
     /**
@@ -52,7 +85,21 @@ class StockMutationController extends Controller
      */
     public function update(Request $request, StockMutation $stockMutation)
     {
-        //
+        $validated = $request->validate([
+            'product_id' => 'sometimes|integer',
+            'product_name' => 'sometimes|string|max:255',
+            'supplier_id' => 'nullable|integer',
+            'mutation_type' => 'sometimes|in:In,Out',
+            'quantity' => 'sometimes|integer|min:1',
+            'date' => 'sometimes|date'
+        ]);
+
+        $stockMutation->update($validated);
+
+        return response()->json([
+            'message' => 'Mutasi stok berhasil diperbarui',
+            'data' => $stockMutation->fresh()
+        ]);
     }
 
     /**
@@ -60,6 +107,10 @@ class StockMutationController extends Controller
      */
     public function destroy(StockMutation $stockMutation)
     {
-        //
+        $stockMutation->delete();
+
+        return response()->json([
+            'message' => 'Mutasi stok berhasil dihapus'
+        ]);
     }
 }

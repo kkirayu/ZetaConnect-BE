@@ -25,6 +25,7 @@ use App\Http\Controllers\MedicalRecordController;
 use App\Http\Controllers\LabResultController;
 use App\Http\Controllers\EReceiptController;
 use App\Http\Controllers\MedicalCertificateController;
+use App\Http\Controllers\StockMutationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -51,25 +52,25 @@ Route::apiResource('users', UserController::class);
 Route::apiResource('pets', PetController::class);
 Route::apiResource('appointments', AppointmentController::class);
 
-// Finance & Services Routes 
+// Finance & Services Routes
 Route::apiResource('services', ServiceController::class)->except(['create', 'edit']);
 Route::apiResource('invoices', InvoiceController::class)->except(['create', 'edit']);
 Route::apiResource('payments', PaymentController::class)->except(['create', 'edit', 'update']);
 Route::patch('payments/{id}/refund', [PaymentController::class, 'refund']);
 
-// Clinic Settings & System Logs 
+// Clinic Settings & System Logs
 Route::get('clinic-settings', [ClinicSettingController::class, 'index']);
 Route::post('clinic-settings', [ClinicSettingController::class, 'update']);
 Route::get('/audit-logs', [AuditLogController::class, 'index']);
 
-// Reports Group 
+// Reports Group
 Route::prefix('reports')->group(function () {
     Route::get('financial', [ReportController::class, 'financial']);
     Route::get('demographics', [ReportController::class, 'demographics']);
     Route::get('stock-mutation', [ReportController::class, 'stockMutation']);
 });
 
-// Pharmacy Group 
+// Pharmacy Group
 Route::prefix('auth')->group(function(){
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
@@ -94,12 +95,16 @@ Route::prefix('pharmacy')->group(function () {
     Route::get('/products', [PharmacyController::class, 'products']);
     Route::delete('/products/{id}', [PharmacyController::class, 'deleteProduct']);
 
+    // STOCK MUTATION
+    Route::get('/stock-mutations', [StockMutationController::class, 'index']);
+    Route::delete('/stock-mutations/{id}', [StockMutationController::class, 'destroy']);
+
     // Prescriptions
     Route::get('/prescriptions', [PharmacyController::class, 'prescriptions']);
     Route::patch('/prescriptions/{medicalRecordId}/status', [PharmacyController::class, 'updatePrescriptionStatus']);
 });
 
-// Other Master Data Routes 
+// Other Master Data Routes
 Route::apiResource('suppliers', SupplierController::class);
 Route::post('/feedbacks', [FeedbackController::class, 'store']);
 Route::get('/feedbacks', [FeedbackController::class, 'index']);
