@@ -70,6 +70,19 @@ Route::prefix('reports')->group(function () {
 });
 
 // Pharmacy Group 
+Route::prefix('auth')->group(function(){
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
+    Route::get('/google', [AuthController::class, 'redirectToGoogle']);
+    Route::get('/google/callback', [AuthController::class, 'handleGoogleCallback']);
+    Route::post('/login', [AuthController::class, 'login']);
+});
+
+Route::apiResource('pet-tips', PetTipController::class);
+Route::apiResource('feedbacks', FeedbackController::class);
+
+Route::get('/audit-logs', [AuditLogController::class, 'index']);
+
 Route::prefix('pharmacy')->group(function () {
     Route::get('/dashboard', [PharmacyController::class, 'dashboard']);
     Route::get('/low-stock', [PharmacyController::class, 'lowStock']);
@@ -118,3 +131,5 @@ Route::middleware('auth:sanctum')->prefix('doctor')->group(function () {
 
 // Patient Profile Update Route
 Route::middleware('auth:sanctum')->put('patients/{id}/profile', [PetController::class, 'updateProfile']);
+
+Route::apiResource('doctors', DoctorController::class);
