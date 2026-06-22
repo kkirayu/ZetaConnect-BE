@@ -67,8 +67,8 @@ class ClinicSettingController extends Controller
             if ($setting->logo_url && !filter_var($setting->logo_url, FILTER_VALIDATE_URL)) {
                 Storage::disk('public')->delete(str_replace('/storage/', '', $setting->logo_url));
             }
-            $uploadedFileUrl = $request->file('logo')->storeOnCloudinary('zetaconnect/logos')->getSecurePath();
-            $setting->logo_url = $uploadedFileUrl;
+            $path = $request->file('logo')->store('zetaconnect/logos', 'cloudinary');
+            $setting->logo_url = Storage::disk('cloudinary')->url($path);
         } elseif ($request->has('logo_url')) {
             $setting->logo_url = $request->logo_url;
         }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Pet;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class PetController extends Controller
@@ -72,7 +73,8 @@ class PetController extends Controller
         $data = $validator->validated();
 
         if ($request->hasFile('photo')) {
-            $data['photo_url'] = $request->file('photo')->storeOnCloudinary('zetaconnect/pets')->getSecurePath();
+            $path = $request->file('photo')->store('zetaconnect/pets', 'cloudinary');
+            $data['photo_url'] = Storage::disk('cloudinary')->url($path);
         }
 
         $pet = Pet::create($data);
@@ -140,7 +142,8 @@ class PetController extends Controller
             // Kita tidak perlu menghapus foto lama secara eksplisit dari Cloudinary
             // karena mengelola file zombie tidak masalah di paket gratis ini,
             // atau bisa menambahkan logika destroy jika perlu.
-            $data['photo_url'] = $request->file('photo')->storeOnCloudinary('zetaconnect/pets')->getSecurePath();
+            $path = $request->file('photo')->store('zetaconnect/pets', 'cloudinary');
+            $data['photo_url'] = Storage::disk('cloudinary')->url($path);
         }
 
         $pet->update($data);
