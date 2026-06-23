@@ -4,62 +4,81 @@ namespace App\Http\Controllers;
 
 use App\Models\ClinicSetting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 
 class ClinicSettingController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Tampilkan pengaturan klinik.
      */
     public function index()
     {
-        //
+        $setting = ClinicSetting::first();
+
+        if (!$setting) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Pengaturan klinik belum disetel',
+                'data'    => null
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pengaturan klinik berhasil diambil',
+            'data'    => $setting
+        ], 200);
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Simpan atau update pengaturan klinik.
      */
-    public function create()
+    public function update(Request $request)
     {
-        //
-    }
+        $validator = Validator::make($request->all(), [
+            'clinic_name'       => 'required|string|max:255',
+            'logo'              => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'logo_url'          => 'nullable|string', // Bisa via string URL kalau bukan file
+            'address'           => 'required|string',
+            'phone_number'      => 'required|string',
+            'email'             => 'required|email',
+            'operational_hours' => 'required|string',
+        ]);
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors'  => $validator->errors()
+            ], 422);
+        }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(ClinicSetting $clinicSetting)
-    {
-        //
-    }
+        $setting = ClinicSetting::first() ?? new ClinicSetting();
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(ClinicSetting $clinicSetting)
-    {
-        //
-    }
+        $setting->clinic_name = $request->clinic_name;
+        $setting->address = $request->address;
+        $setting->phone_number = $request->phone_number;
+        $setting->email = $request->email;
+        $setting->operational_hours = $request->operational_hours;
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, ClinicSetting $clinicSetting)
-    {
-        //
-    }
+        if ($request->hasFile('logo')) {
+            // Delete old logo if exists and is local file
+            if ($setting->logo_url && !filter_var($setting->logo_url, FILTER_VALIDATE_URL)) {
+                Storage::disk('public')->delete(str_replace('/storage/', '', $setting->logo_url));
+            }
+            $path = $request->file('logo')->store('zetaconnect/logos', 'cloudinary');
+            $setting->logo_url = Storage::disk('cloudinary')->url($path);
+        } elseif ($request->has('logo_url')) {
+            $setting->logo_url = $request->logo_url;
+        }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(ClinicSetting $clinicSetting)
-    {
-        //
+        $setting->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pengaturan klinik berhasil disimpan',
+            'data'    => $setting
+        ], 200);
     }
 }

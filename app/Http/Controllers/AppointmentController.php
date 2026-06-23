@@ -59,6 +59,7 @@ class AppointmentController extends Controller
                 Rule::exists('pets', 'id')->where('owner_id', $ownerId),
             ],
             'service_id'        => 'required|exists:services,id',
+            'doctor_id'         => 'nullable|exists:users,id',
             'booking_type'      => 'required|in:Online,Walk-in',
             'schedule_date'     => 'required|date',
             'schedule_time'     => 'required|date_format:H:i',
@@ -88,14 +89,14 @@ class AppointmentController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Janji temu berhasil dibuat',
-            'data'    => $appointment->load(['owner', 'pet', 'service'])
+            'data'    => $appointment->load(['owner', 'pet', 'service', 'doctor'])
         ], 201);
     }
 
     
     public function show($id)
     {
-        $appointment = Appointment::with(['owner', 'pet', 'service'])->find($id);
+        $appointment = Appointment::with(['owner', 'pet', 'service', 'doctor'])->find($id);
 
         if (!$appointment) {
             return response()->json(['message' => 'Janji temu tidak ditemukan'], 404);
@@ -126,6 +127,7 @@ class AppointmentController extends Controller
             'owner_id'          => 'sometimes|exists:users,id',
             'pet_id'            => 'sometimes|exists:pets,id',
             'service_id'        => 'sometimes|exists:services,id',
+            'doctor_id'         => 'sometimes|nullable|exists:users,id',
             'booking_type'      => 'sometimes|in:Online,Walk-in',
             'schedule_date'     => 'sometimes|date',
             'schedule_time'     => 'sometimes|date_format:H:i',
@@ -143,7 +145,7 @@ class AppointmentController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Janji temu berhasil diupdate',
-            'data'    => $appointment->fresh()->load(['owner', 'pet', 'service'])
+            'data'    => $appointment->fresh()->load(['owner', 'pet', 'service', 'doctor'])
         ], 200);
     }
 

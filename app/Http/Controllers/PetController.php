@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Pet;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class PetController extends Controller
@@ -49,6 +50,7 @@ class PetController extends Controller
         $validator = Validator::make($request->all(), [
             'owner_id'           => 'required|exists:users,id',
             'name'               => 'required|string|max:255',
+            'photo'              => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'species'            => 'required|in:Kucing,Anjing,Burung,Lainnya',
             'breed'              => 'nullable|string|max:255',
             'gender'             => 'required|in:Jantan,Betina',
@@ -62,7 +64,14 @@ class PetController extends Controller
             return response()->json($validator->errors(), 422);
         }
 
-        $pet = Pet::create($validator->validated());
+        $data = $validator->validated();
+
+        if ($request->hasFile('photo')) {
+            $path = $request->file('photo')->store('zetaconnect/pets', 'cloudinary');
+            $data['photo_url'] = Storage::disk('cloudinary')->url($path);
+        }
+
+        $pet = Pet::create($data);
 
         return response()->json([
             'success' => true,
@@ -101,6 +110,7 @@ class PetController extends Controller
         $validator = Validator::make($request->all(), [
             'owner_id'           => 'sometimes|exists:users,id',
             'name'               => 'sometimes|string|max:255',
+            'photo'              => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'species'            => 'sometimes|in:Kucing,Anjing,Burung,Lainnya',
             'breed'              => 'nullable|string|max:255',
             'gender'             => 'sometimes|in:Jantan,Betina',
@@ -114,7 +124,17 @@ class PetController extends Controller
             return response()->json($validator->errors(), 422);
         }
 
-        $pet->update($validator->validated());
+        $data = $validator->validated();
+
+        if ($request->hasFile('photo')) {
+            // Kita tidak perlu menghapus foto lama secara eksplisit dari Cloudinary
+            // karena mengelola file zombie tidak masalah di paket gratis ini,
+            // atau bisa menambahkan logika destroy jika perlu.
+            $path = $request->file('photo')->store('zetaconnect/pets', 'cloudinary');
+            $data['photo_url'] = Storage::disk('cloudinary')->url($path);
+        }
+
+        $pet->update($data);
 
         return response()->json([
             'success' => true,
