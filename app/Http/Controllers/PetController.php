@@ -8,24 +8,22 @@ use Illuminate\Support\Facades\Validator;
 
 class PetController extends Controller
 {
-    /**
-     * Tampilkan daftar hewan peliharaan (bisa difilter & dipaginasi)
-     */
+   
     public function index(Request $request)
     {
         $query = Pet::query();
 
-        // Pencarian berdasarkan nama hewan
+
         if ($request->has('search')) {
             $query->where('name', 'like', '%' . $request->search . '%');
         }
 
-        // Filter berdasarkan owner
+
         if ($request->has('owner_id')) {
             $query->where('owner_id', $request->owner_id);
         }
 
-        // Filter berdasarkan spesies
+       
         if ($request->has('species')) {
             $query->where('species', $request->species);
         }
@@ -39,17 +37,13 @@ class PetController extends Controller
         ], 200);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
+    
     public function create()
     {
-        //
+        
     }
 
-    /**
-     * Simpan hewan peliharaan baru
-     */
+    
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -77,9 +71,7 @@ class PetController extends Controller
         ], 201);
     }
 
-    /**
-     * Detail hewan peliharaan tunggal
-     */
+    
     public function show($id)
     {
         $pet = Pet::with('owner')->find($id);
@@ -94,17 +86,13 @@ class PetController extends Controller
         ], 200);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
+
     public function edit(Pet $pet)
     {
-        //
+        
     }
 
-    /**
-     * Update data hewan peliharaan
-     */
+   
     public function update(Request $request, $id)
     {
         $pet = Pet::find($id);
@@ -135,9 +123,7 @@ class PetController extends Controller
         ], 200);
     }
 
-    /**
-     * Hapus hewan peliharaan
-     */
+    
     public function destroy($id)
     {
         $pet = Pet::find($id);
