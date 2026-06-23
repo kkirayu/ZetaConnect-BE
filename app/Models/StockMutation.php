@@ -8,10 +8,19 @@ class StockMutation extends Model
 {
     protected $fillable = [
         'product_id',
-        'product_name',
         'supplier_id',
         'mutation_type',
         'quantity',
         'date'
     ];
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
+
+    public function supplier()
+    {
+        return $this->belongsTo(Supplier::class);
+    }
 }

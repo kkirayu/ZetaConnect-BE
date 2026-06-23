@@ -10,23 +10,42 @@ class StockMutationController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
-    {
-        $search = $request->search;
+public function index(Request $request)
+{
+    $search = $request->search;
 
-        $query = StockMutation::query();
+    $query = StockMutation::with([
+        'product',
+        'supplier'
+    ]);
 
-        if ($search) {
-            $query->where('product_name', 'like', "%{$search}%")
-                  ->orWhere('mutation_type', 'like', "%{$search}%");
-        }
-
-        $mutations = $query
-            ->orderBy('date', 'desc')
-            ->get();
-
-        return response()->json($mutations);
+    if ($search) {
+        $query->where(function ($q) use ($search) {
+            $q->whereHas('product', function ($product) use ($search) {
+                $product->where('name', 'like', "%{$search}%");
+            })
+            ->orWhere('mutation_type', 'like', "%{$search}%");
+        });
     }
+
+    $mutations = $query
+        ->orderBy('date', 'desc')
+        ->get()
+        ->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'product_id' => $item->product_id,
+                'product_name' => $item->product?->name,
+                'supplier_id' => $item->supplier_id,
+                'supplier_name' => $item->supplier?->company_name,
+                'mutation_type' => $item->mutation_type,
+                'quantity' => $item->quantity,
+                'date' => $item->date,
+            ];
+        });
+
+    return response()->json($mutations);
+}
 
     /**
      * Show the form for creating a new resource.
