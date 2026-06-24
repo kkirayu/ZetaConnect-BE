@@ -102,8 +102,16 @@ public function index(Request $request)
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, StockMutation $stockMutation)
+    public function update(Request $request, $id)
     {
+        $stockMutation = StockMutation::find($id);
+
+        if (! $stockMutation) {
+            return response()->json([
+                'message' => 'Mutasi stok tidak ditemukan'
+            ], 404);
+        }
+
         $validated = $request->validate([
             'product_id' => 'sometimes|integer',
             'product_name' => 'sometimes|string|max:255',
@@ -124,8 +132,16 @@ public function index(Request $request)
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(StockMutation $stockMutation)
+    public function destroy($id)
     {
+        $stockMutation = StockMutation::find($id);
+
+        if (! $stockMutation) {
+            return response()->json([
+                'message' => 'Mutasi stok tidak ditemukan'
+            ], 404);
+        }
+
         $stockMutation->delete();
 
         return response()->json([

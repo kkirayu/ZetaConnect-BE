@@ -98,6 +98,7 @@ Route::prefix('pharmacy')->group(function () {
     // STOCK MUTATION
     Route::get('/stock-mutations', [StockMutationController::class, 'index']);
     Route::post('/stock-mutations', [StockMutationController::class, 'store']);
+    Route::put('/stock-mutations/{id}', [StockMutationController::class, 'update']);
     Route::delete('/stock-mutations/{id}', [StockMutationController::class, 'destroy']);
 
     // Prescriptions
