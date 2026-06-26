@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\StockMutation;
+use App\Models\Product;
+use App\Models\ProductBatch;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class StockMutationController extends Controller
 {
@@ -69,15 +72,66 @@ public function index(Request $request)
             'supplier_id' => 'nullable|integer',
             'mutation_type' => 'required|in:In,Out',
             'quantity' => 'required|integer|min:1',
-            'date' => 'required|date'
+            'date' => 'required|date',
+            'expired_date' => 'nullable|date',
+            'notes' => 'nullable|string'
         ]);
 
-        $mutation = StockMutation::create($validated);
+        try {
+            DB::beginTransaction();
 
-        return response()->json([
-            'message' => 'Mutasi stok berhasil ditambahkan',
-            'data' => $mutation
-        ], 201);
+            $mutation = StockMutation::create([
+                'product_id' => $validated['product_id'],
+                'supplier_id' => $validated['supplier_id'] ?? null,
+                'mutation_type' => $validated['mutation_type'],
+                'quantity' => $validated['quantity'],
+                'date' => $validated['date']
+            ]);
+
+            $product = Product::findOrFail($validated['product_id']);
+
+            if ($validated['mutation_type'] === 'In') {
+                $product->current_stock += $validated['quantity'];
+                
+                // Create product batch
+                $batchNumber = 'BATCH-' . date('Ymd', strtotime($validated['date'])) . '-' . strtoupper(substr(uniqid(), -5));
+                
+                ProductBatch::create([
+                    'product_id' => $product->id,
+                    'batch_number' => $batchNumber,
+                    'stock' => $validated['quantity'],
+                    'exp_date' => $validated['expired_date'] ?? null,
+                    'notes' => $validated['notes'] ?? null
+                ]);
+
+                // Update product's closest exp_date
+                if (!empty($validated['expired_date'])) {
+                    if (!$product->exp_date || $validated['expired_date'] < $product->exp_date) {
+                        $product->exp_date = $validated['expired_date'];
+                    }
+                }
+            } else {
+                if ($product->current_stock < $validated['quantity']) {
+                    throw new \Exception('Stok tidak mencukupi untuk dikeluarkan.');
+                }
+                $product->current_stock -= $validated['quantity'];
+            }
+
+            $product->save();
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Mutasi stok berhasil ditambahkan',
+                'data' => $mutation
+            ], 201);
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Gagal menyimpan mutasi: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

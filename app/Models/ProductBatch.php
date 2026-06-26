@@ -11,6 +11,7 @@ class ProductBatch extends Model
         'batch_number',
         'stock',
         'exp_date',
+        'notes',
     ];
 
     public function product()
