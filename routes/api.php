@@ -26,7 +26,7 @@ use App\Http\Controllers\LabResultController;
 use App\Http\Controllers\EReceiptController;
 use App\Http\Controllers\MedicalCertificateController;
 use App\Http\Controllers\StockMutationController;
-
+use App\Http\Controllers\ProductController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -51,6 +51,7 @@ Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallbac
 Route::apiResource('users', UserController::class);
 Route::apiResource('pets', PetController::class);
 Route::apiResource('appointments', AppointmentController::class);
+Route::apiResource('products', ProductController::class);
 
 // Finance & Services Routes
 Route::apiResource('services', ServiceController::class)->except(['create', 'edit']);
@@ -91,9 +92,6 @@ Route::prefix('pharmacy')->group(function () {
     Route::get('/expiring-products', [PharmacyController::class, 'expiringProducts']);
     Route::get('/inventory-summary', [PharmacyController::class, 'inventorySummary']);
 
-    // Stock Monitoring
-    Route::get('/products', [PharmacyController::class, 'products']);
-    Route::delete('/products/{id}', [PharmacyController::class, 'deleteProduct']);
 
     // STOCK MUTATION
     Route::get('/stock-mutations', [StockMutationController::class, 'index']);
