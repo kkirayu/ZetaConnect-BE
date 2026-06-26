@@ -23,4 +23,9 @@ class StockMutation extends Model
     {
         return $this->belongsTo(Supplier::class);
     }
+
+    public function productBatch()
+    {
+        return $this->hasOne(ProductBatch::class, 'stock_mutation_id');
+    }
 }

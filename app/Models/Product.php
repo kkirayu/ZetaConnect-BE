@@ -15,6 +15,8 @@ class Product extends Model
         'current_stock',
         'min_stock',
         'exp_date',
+        'image_url',
+        'image_public_id',
     ];
 
     protected $appends = ['is_expired', 'stock_status'];

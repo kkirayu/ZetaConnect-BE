@@ -19,7 +19,8 @@ public function index(Request $request)
 
     $query = StockMutation::with([
         'product',
-        'supplier'
+        'supplier',
+        'productBatch'
     ]);
 
     if ($search) {
@@ -44,6 +45,7 @@ public function index(Request $request)
                 'mutation_type' => $item->mutation_type,
                 'quantity' => $item->quantity,
                 'date' => $item->date,
+                'product_batch' => $item->productBatch,
             ];
         });
 
@@ -94,10 +96,14 @@ public function index(Request $request)
                 $product->current_stock += $validated['quantity'];
                 
                 // Create product batch
-                $batchNumber = 'BATCH-' . date('Ymd', strtotime($validated['date'])) . '-' . strtoupper(substr(uniqid(), -5));
+                $cleanName = preg_replace('/[^A-Za-z]/', '', $product->name);
+                $cleanName = str_pad($cleanName, 3, 'X');
+                $code = strtoupper(substr($cleanName, 0, 3));
+                $batchNumber = $code . '-' . date('dmY', strtotime($validated['date']));
                 
                 ProductBatch::create([
                     'product_id' => $product->id,
+                    'stock_mutation_id' => $mutation->id,
                     'batch_number' => $batchNumber,
                     'stock' => $validated['quantity'],
                     'exp_date' => $validated['expired_date'] ?? null,

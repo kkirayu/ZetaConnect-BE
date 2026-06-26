@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
@@ -13,7 +14,9 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Product::query();
+        $query = Product::with(['productBatches' => function($q) {
+            $q->orderBy('exp_date', 'asc');
+        }]);
 
         if ($request->has('search')) {
             $query->where('name', 'like', '%' . $request->search . '%')
@@ -47,6 +50,7 @@ class ProductController extends Controller
             'current_stock' => 'nullable|integer|min:0',
             'min_stock'     => 'nullable|integer|min:0',
             'exp_date'      => 'nullable|date',
+            'image'         => 'nullable|image|max:1024',
         ]);
 
         if ($validator->fails()) {
@@ -57,7 +61,15 @@ class ProductController extends Controller
             ], 422);
         }
 
-        $product = Product::create($request->all());
+        $productData = $request->except('image');
+
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('products', 'cloudinary');
+            $productData['image_url'] = Storage::disk('cloudinary')->url($path);
+            $productData['image_public_id'] = $path;
+        }
+
+        $product = Product::create($productData);
 
         return response()->json([
             'success' => true,
@@ -110,6 +122,7 @@ class ProductController extends Controller
             'current_stock' => 'nullable|integer|min:0',
             'min_stock'     => 'nullable|integer|min:0',
             'exp_date'      => 'nullable|date',
+            'image'         => 'nullable|image|max:1024',
         ]);
 
         if ($validator->fails()) {
@@ -120,7 +133,18 @@ class ProductController extends Controller
             ], 422);
         }
 
-        $product->update($request->all());
+        $productData = $request->except('image');
+
+        if ($request->hasFile('image')) {
+            if ($product->image_public_id) {
+                Storage::disk('cloudinary')->delete($product->image_public_id);
+            }
+            $path = $request->file('image')->store('products', 'cloudinary');
+            $productData['image_url'] = Storage::disk('cloudinary')->url($path);
+            $productData['image_public_id'] = $path;
+        }
+
+        $product->update($productData);
 
         return response()->json([
             'success' => true,
@@ -141,6 +165,10 @@ class ProductController extends Controller
                 'success' => false,
                 'message' => 'Produk tidak ditemukan'
             ], 404);
+        }
+
+        if ($product->image_public_id) {
+            Storage::disk('cloudinary')->delete($product->image_public_id);
         }
 
         $product->delete();
