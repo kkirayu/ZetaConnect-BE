@@ -54,6 +54,37 @@ Route::apiResource('appointments', AppointmentController::class);
 Route::apiResource('products', ProductController::class);
 
 // Finance & Services Routes
+// ==============================================
+// ADMIN ROUTES (Hanya bisa diakses Admin)
+// ==============================================
+Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
+    Route::apiResource('users', UserController::class);
+    
+    // Clinic Settings & System Logs 
+    Route::get('clinic-settings', [ClinicSettingController::class, 'index']);
+    Route::post('clinic-settings', [ClinicSettingController::class, 'update']);
+    Route::get('/audit-logs', [AuditLogController::class, 'index']);
+
+    // Reports Group 
+    Route::prefix('reports')->group(function () {
+        Route::get('financial', [ReportController::class, 'financial']);
+        Route::get('demographics', [ReportController::class, 'demographics']);
+        Route::get('stock-mutation', [ReportController::class, 'stockMutation']);
+    });
+});
+
+// ==============================================
+// OWNER ROUTES (Pemilik Hewan / Owner)
+// ==============================================
+Route::middleware(['auth:sanctum', 'role:owner,pemilik hewan'])->group(function () {
+    Route::apiResource('pets', PetController::class);
+    Route::apiResource('appointments', AppointmentController::class);
+});
+
+// ==============================================
+// PUBLIC ATAU SHARED ROUTES
+// ==============================================
+// Finance & Services Routes 
 Route::apiResource('services', ServiceController::class)->except(['create', 'edit']);
 Route::apiResource('invoices', InvoiceController::class)->except(['create', 'edit']);
 Route::apiResource('payments', PaymentController::class)->except(['create', 'edit', 'update']);
@@ -72,6 +103,7 @@ Route::prefix('reports')->group(function () {
 });
 
 // Pharmacy Group
+// Pharmacy Group 
 Route::prefix('auth')->group(function(){
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);

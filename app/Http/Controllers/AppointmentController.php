@@ -11,30 +11,28 @@ use Illuminate\Validation\Rule;
 
 class AppointmentController extends Controller
 {
-    /**
-     * Tampilkan daftar janji temu.
-     */
+    
     public function index(Request $request)
     {
         $query = Appointment::query();
 
-        // Filter berdasarkan status
+
         if ($request->has('status')) {
             $query->where('status', $request->status);
         }
 
-        // Filter berdasarkan tanggal
+       
         if ($request->has('date')) {
             $query->whereDate('schedule_date', $request->date);
         }
 
-        // Filter berdasarkan owner
+        
         if ($request->has('owner_id')) {
             $query->where('owner_id', $request->owner_id);
         }
 
-        // Include relasi
-        $appointments = $query->with(['owner', 'pet', 'service', 'doctor'])->orderBy('schedule_date', 'desc')->orderBy('schedule_time', 'asc')->paginate(10);
+       
+        $appointments = $query->with(['owner', 'pet', 'service'])->orderBy('schedule_date', 'desc')->orderBy('schedule_time', 'asc')->paginate(10);
 
         return response()->json([
             'success' => true,
@@ -43,17 +41,13 @@ class AppointmentController extends Controller
         ], 200);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
+  
     public function create()
     {
-        //
+        
     }
 
-    /**
-     * Simpan janji temu baru.
-     */
+    
     public function store(Request $request)
     {
         $ownerId = $request->input('owner_id');
@@ -70,7 +64,7 @@ class AppointmentController extends Controller
             'schedule_date'     => 'required|date',
             'schedule_time'     => 'required|date_format:H:i',
             'initial_complaint' => 'required|string',
-            'queue_number'      => 'nullable|string', // Bisa diisi front-end atau di-generate otomatis
+            'queue_number'      => 'nullable|string', 
             'status'            => 'nullable|in:Menunggu,Disetujui,Dalam Periksa,Selesai,Batal'
         ]);
 
@@ -80,7 +74,7 @@ class AppointmentController extends Controller
 
         $data = $validator->validated();
         
-        // Generate nomor antrean jika tidak ada
+        
         if (empty($data['queue_number'])) {
             $countToday = Appointment::whereDate('schedule_date', $data['schedule_date'])->count() + 1;
             $data['queue_number'] = 'Q-' . date('Ymd', strtotime($data['schedule_date'])) . '-' . str_pad($countToday, 3, '0', STR_PAD_LEFT);
@@ -99,9 +93,7 @@ class AppointmentController extends Controller
         ], 201);
     }
 
-    /**
-     * Detail janji temu.
-     */
+    
     public function show($id)
     {
         $appointment = Appointment::with(['owner', 'pet', 'service', 'doctor'])->find($id);
@@ -116,17 +108,13 @@ class AppointmentController extends Controller
         ], 200);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
+   
     public function edit(Appointment $appointment)
     {
-        //
+        
     }
 
-    /**
-     * Update janji temu.
-     */
+   
     public function update(Request $request, $id)
     {
         $appointment = Appointment::find($id);
@@ -161,9 +149,7 @@ class AppointmentController extends Controller
         ], 200);
     }
 
-    /**
-     * Hapus janji temu.
-     */
+    
     public function destroy($id)
     {
         $appointment = Appointment::find($id);

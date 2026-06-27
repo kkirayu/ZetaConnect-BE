@@ -25,6 +25,7 @@ class Pet extends Model
         'allergies',
         'weight',
         'subjective_complaint',
+        'photo_url',
     ];
 
     protected $casts = [
