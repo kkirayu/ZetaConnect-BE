@@ -6475,16 +6475,6 @@
         },
         {
             "name": "symfony/string",
-            "version": "v8.1.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/symfony/string.git",
-                "reference": "afd5944f4005862d961efb85c8bbd5c523c4e3c9"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/string/zipball/afd5944f4005862d961efb85c8bbd5c523c4e3c9",
-                "reference": "afd5944f4005862d961efb85c8bbd5c523c4e3c9",
             "version": "v7.4.13",
             "source": {
                 "type": "git",
@@ -6551,7 +6541,6 @@
                 "utf8"
             ],
             "support": {
-                "source": "https://github.com/symfony/string/tree/v8.1.0"
                 "source": "https://github.com/symfony/string/tree/v7.4.13"
             },
             "funding": [
@@ -6572,7 +6561,6 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-05-29T05:06:50+00:00"
             "time": "2026-05-23T15:23:29+00:00"
         },
         {
@@ -7000,16 +6988,6 @@
         },
         {
             "name": "symfony/yaml",
-            "version": "v8.1.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/symfony/yaml.git",
-                "reference": "efb42bd2c6f4f3ccfd4683583449938b5fc146b0"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/yaml/zipball/efb42bd2c6f4f3ccfd4683583449938b5fc146b0",
-                "reference": "efb42bd2c6f4f3ccfd4683583449938b5fc146b0",
             "version": "v7.4.13",
             "source": {
                 "type": "git",
@@ -7062,7 +7040,6 @@
             "description": "Loads and dumps YAML files",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/yaml/tree/v8.1.0"
                 "source": "https://github.com/symfony/yaml/tree/v7.4.13"
             },
             "funding": [
@@ -7083,7 +7060,6 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-05-29T05:06:50+00:00"
             "time": "2026-05-25T06:06:12+00:00"
         },
         {
