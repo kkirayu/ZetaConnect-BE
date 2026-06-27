@@ -1,12 +1,5 @@
 <?php
 
-/**
- * @OA\Server(
- * url="http://localhost:8000",
- * description="Local Server"
- * )
- */
-
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -32,7 +25,8 @@ use App\Http\Controllers\MedicalRecordController;
 use App\Http\Controllers\LabResultController;
 use App\Http\Controllers\EReceiptController;
 use App\Http\Controllers\MedicalCertificateController;
-
+use App\Http\Controllers\StockMutationController;
+use App\Http\Controllers\ProductController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -53,6 +47,13 @@ Route::post('/auth/login', [AuthController::class, 'login']);
 Route::get('/auth/google', [AuthController::class, 'redirectToGoogle']);
 Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback']);
 
+// Core Resource Routes (User, Pet, Appointment)
+Route::apiResource('users', UserController::class);
+Route::apiResource('pets', PetController::class);
+Route::apiResource('appointments', AppointmentController::class);
+Route::apiResource('products', ProductController::class);
+
+// Finance & Services Routes
 // ==============================================
 // ADMIN ROUTES (Hanya bisa diakses Admin)
 // ==============================================
@@ -89,6 +90,19 @@ Route::apiResource('invoices', InvoiceController::class)->except(['create', 'edi
 Route::apiResource('payments', PaymentController::class)->except(['create', 'edit', 'update']);
 Route::patch('payments/{id}/refund', [PaymentController::class, 'refund']);
 
+// Clinic Settings & System Logs
+Route::get('clinic-settings', [ClinicSettingController::class, 'index']);
+Route::post('clinic-settings', [ClinicSettingController::class, 'update']);
+Route::get('/audit-logs', [AuditLogController::class, 'index']);
+
+// Reports Group
+Route::prefix('reports')->group(function () {
+    Route::get('financial', [ReportController::class, 'financial']);
+    Route::get('demographics', [ReportController::class, 'demographics']);
+    Route::get('stock-mutation', [ReportController::class, 'stockMutation']);
+});
+
+// Pharmacy Group
 // Pharmacy Group 
 Route::prefix('auth')->group(function(){
     Route::post('/register', [AuthController::class, 'register']);
@@ -110,16 +124,19 @@ Route::prefix('pharmacy')->group(function () {
     Route::get('/expiring-products', [PharmacyController::class, 'expiringProducts']);
     Route::get('/inventory-summary', [PharmacyController::class, 'inventorySummary']);
 
-    // Stock Monitoring
-    Route::get('/products', [PharmacyController::class, 'products']);
-    Route::delete('/products/{id}', [PharmacyController::class, 'deleteProduct']);
+
+    // STOCK MUTATION
+    Route::get('/stock-mutations', [StockMutationController::class, 'index']);
+    Route::post('/stock-mutations', [StockMutationController::class, 'store']);
+    Route::put('/stock-mutations/{id}', [StockMutationController::class, 'update']);
+    Route::delete('/stock-mutations/{id}', [StockMutationController::class, 'destroy']);
 
     // Prescriptions
     Route::get('/prescriptions', [PharmacyController::class, 'prescriptions']);
     Route::patch('/prescriptions/{medicalRecordId}/status', [PharmacyController::class, 'updatePrescriptionStatus']);
 });
 
-// Other Master Data Routes 
+// Other Master Data Routes
 Route::apiResource('suppliers', SupplierController::class);
 Route::post('/feedbacks', [FeedbackController::class, 'store']);
 Route::get('/feedbacks', [FeedbackController::class, 'index']);
