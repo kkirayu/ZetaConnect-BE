@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Appointment;
 use App\Models\Pet;
+use App\Models\DoctorSchedule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -39,6 +40,79 @@ class AppointmentController extends Controller
             'message' => 'Daftar janji temu berhasil diambil',
             'data'    => $appointments
         ], 200);
+    }
+
+    public function getAvailableSessions(Request $request)
+    {
+        $date = $request->query('date');
+        $doctorId = $request->query('doctor_id');
+
+        if (!$date) {  
+            return response()->json(['message' => 'Date is required'], 400);
+        }
+
+        $dayOfWeek = date('l', strtotime($date));
+        $dayMap = [
+            'Monday' => 'Senin',
+            'Tuesday' => 'Selasa',
+            'Wednesday' => 'Rabu',
+            'Thursday' => 'Kamis',
+            'Friday' => 'Jumat',
+            'Saturday' => 'Sabtu',
+            'Sunday' => 'Minggu',
+        ];
+        $hariPraktik = $dayMap[$dayOfWeek];
+
+        $sessionTimes = [
+            'Sesi 1' => '08:00',
+            'Sesi 2' => '09:00',
+            'Sesi 3' => '10:00',
+            'Sesi 4' => '11:00',
+            'Sesi 5' => '12:00',
+            'Sesi 6' => '13:00',
+            'Sesi 7' => '14:00',
+            'Sesi 8' => '15:00',
+        ];
+
+        $availableTimes = [];
+
+        foreach ($sessionTimes as $sessionName => $time) {
+            $totalScheduledDoctors = DoctorSchedule::where('hari_praktik', $hariPraktik)
+                                ->where('sesi_praktik', $sessionName)->count();
+            
+            if ($totalScheduledDoctors === 0) continue; 
+
+            $totalBooked = Appointment::whereDate('schedule_date', $date)
+                                        ->where('schedule_time', 'like', $time . '%')
+                                        ->whereNotIn('status', ['Batal'])
+                                        ->count();
+
+            if ($doctorId) {
+                $isDoctorScheduled = DoctorSchedule::where('hari_praktik', $hariPraktik)
+                                        ->where('sesi_praktik', $sessionName)
+                                        ->where('doctor_id', $doctorId)
+                                        ->exists();
+                
+                if (!$isDoctorScheduled) continue;
+
+                $isDoctorBooked = Appointment::whereDate('schedule_date', $date)
+                                        ->where('schedule_time', 'like', $time . '%')
+                                        ->where('doctor_id', $doctorId)
+                                        ->whereNotIn('status', ['Batal'])
+                                        ->exists();
+                
+                if ($isDoctorBooked) continue;
+            }
+
+            if ($totalBooked < $totalScheduledDoctors) {
+                $availableTimes[] = $time;
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $availableTimes
+        ]);
     }
 
   

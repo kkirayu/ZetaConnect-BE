@@ -16,7 +16,6 @@ return new class extends Migration
             $table->id('doctor_id');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->string('name');
-            $table->string('spesialisasi');
             $table->string('image')->nullable();
             $table->timestamps();
         });
@@ -26,17 +25,8 @@ return new class extends Migration
             $table->id('schedule_id');
             $table->foreignId('doctor_id')->references('doctor_id')->on('doctors')->onDelete('cascade');
             $table->enum('hari_praktik', ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu']);
-            $table->enum('sesi_praktik', ['Sesi 1', 'Sesi 2', 'Sesi 3', 'Sesi 4', 'Sesi 5']);
+            $table->enum('sesi_praktik', ['Sesi 1', 'Sesi 2', 'Sesi 3', 'Sesi 4', 'Sesi 5', 'Sesi 6', 'Sesi 7', 'Sesi 8']);
             $table->timestamps();
         });
-    }
-
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        Schema::dropIfExists('doctor_schedules');
-        Schema::dropIfExists('doctors');
     }
 };

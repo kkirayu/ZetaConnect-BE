@@ -50,6 +50,7 @@ Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallbac
 // Core Resource Routes (User, Pet, Appointment)
 Route::apiResource('users', UserController::class);
 Route::apiResource('pets', PetController::class);
+Route::get('available-sessions', [AppointmentController::class, 'getAvailableSessions']);
 Route::apiResource('appointments', AppointmentController::class);
 Route::apiResource('products', ProductController::class);
 

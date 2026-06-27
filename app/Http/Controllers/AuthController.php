@@ -6,6 +6,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\SendOtpMail;
 
 class AuthController extends Controller
 {
@@ -80,6 +82,12 @@ class AuthController extends Controller
             'status' => 'Tidak Aktif',
             'otp_code' => $otp
         ]);
+
+        try {
+            Mail::to($user->email)->send(new SendOtpMail($otp));
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to send OTP email: ' . $e->getMessage());
+        }
 
         return response()->json([
             'message' => 'Registration successful. Please verify OTP.',

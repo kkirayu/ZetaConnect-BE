@@ -18,11 +18,10 @@ class DoctorController extends Controller
         $request->validate([
             'user_id' => 'required|exists:users,id',
             'name' => 'required|string|max:255',
-            'spesialisasi' => 'required|string|max:255',
             'image' => 'nullable|string',
             'schedules' => 'nullable|array',
             'schedules.*.hari_praktik' => 'required_with:schedules|string|in:Senin,Selasa,Rabu,Kamis,Jumat,Sabtu,Minggu',
-            'schedules.*.sesi_praktik' => 'required_with:schedules|string|in:Sesi 1,Sesi 2,Sesi 3,Sesi 4,Sesi 5',
+            'schedules.*.sesi_praktik' => 'required_with:schedules|string|in:Sesi 1,Sesi 2,Sesi 3,Sesi 4,Sesi 5,Sesi 6,Sesi 7,Sesi 8',
         ]);
 
         $doctor = Doctor::create($request->except('schedules'));
@@ -59,11 +58,10 @@ class DoctorController extends Controller
         $request->validate([
             'user_id' => 'sometimes|required|exists:users,id',
             'name' => 'sometimes|required|string|max:255',
-            'spesialisasi' => 'sometimes|required|string|max:255',
             'image' => 'nullable|string',
             'schedules' => 'nullable|array',
             'schedules.*.hari_praktik' => 'required_with:schedules|string|in:Senin,Selasa,Rabu,Kamis,Jumat,Sabtu,Minggu',
-            'schedules.*.sesi_praktik' => 'required_with:schedules|string|in:Sesi 1,Sesi 2,Sesi 3,Sesi 4,Sesi 5',
+            'schedules.*.sesi_praktik' => 'required_with:schedules|string|in:Sesi 1,Sesi 2,Sesi 3,Sesi 4,Sesi 5,Sesi 6,Sesi 7,Sesi 8',
         ]);
 
         $doctor->update($request->except('schedules'));
