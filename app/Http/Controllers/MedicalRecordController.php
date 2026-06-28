@@ -22,7 +22,11 @@ class MedicalRecordController extends Controller
     {
         $petId = $request->query('pet_id');
         $petId = $petId !== null ? (int) $petId : null;
-        $records = $this->service->getAll(10, $petId);
+        
+        $ownerId = $request->query('owner_id');
+        $ownerId = $ownerId !== null ? (int) $ownerId : null;
+        
+        $records = $this->service->getAll(10, $petId, $ownerId);
 
         return response()->json([
             'success' => true,
