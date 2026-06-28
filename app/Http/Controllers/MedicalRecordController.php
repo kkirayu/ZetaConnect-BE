@@ -18,9 +18,10 @@ class MedicalRecordController extends Controller
     {
     }
 
-    public function index(): JsonResponse
+    public function index(\Illuminate\Http\Request $request): JsonResponse
     {
-        $records = $this->service->getAll();
+        $petId = $request->query('pet_id');
+        $records = $this->service->getAll(10, $petId);
 
         return response()->json([
             'success' => true,
