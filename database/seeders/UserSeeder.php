@@ -46,5 +46,17 @@ class UserSeeder extends Seeder
                 'address' => 'Bantul, DIY',
             ]
         );
+
+        \App\Models\User::updateOrCreate(
+            ['email' => 'resepsionis@zeta.com'],
+            [
+                'name' => 'Resepsionis Zeta',
+                'password' => bcrypt('password123'),
+                'phone_number' => '08222333444',
+                'role' => 'Resepsionis', 
+                'status' => 'Aktif',
+                'address' => 'Klinik Zeta Connect',
+            ]
+        );
     }
 }
