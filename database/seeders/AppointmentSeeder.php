@@ -26,6 +26,11 @@ class AppointmentSeeder extends Seeder
             return;
         }
 
+        $today = Carbon::now()->toDateString();
+        $tomorrow = Carbon::now()->addDay()->toDateString();
+        $todayFormatted = Carbon::now()->format('Ymd');
+        $tomorrowFormatted = Carbon::now()->addDay()->format('Ymd');
+
         $appointments = [
             [
                 'owner_id' => $owner->id,
@@ -33,10 +38,10 @@ class AppointmentSeeder extends Seeder
                 'service_id' => $service->id,
                 'doctor_id' => $doctor->id,
                 'booking_type' => 'Online',
-                'schedule_date' => Carbon::now()->toDateString(),
+                'schedule_date' => $today,
                 'schedule_time' => '10:00:00',
                 'initial_complaint' => 'Kucing muntah-muntah',
-                'queue_number' => 'A001',
+                'queue_number' => "Q-{$todayFormatted}-001",
                 'status' => 'Menunggu',
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
@@ -47,10 +52,10 @@ class AppointmentSeeder extends Seeder
                 'service_id' => $service->id,
                 'doctor_id' => $doctor->id,
                 'booking_type' => 'Walk-in',
-                'schedule_date' => Carbon::now()->toDateString(),
+                'schedule_date' => $today,
                 'schedule_time' => '11:00:00',
                 'initial_complaint' => 'Vaksinasi rutin',
-                'queue_number' => 'A002',
+                'queue_number' => "Q-{$todayFormatted}-002",
                 'status' => 'Disetujui',
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
@@ -61,10 +66,10 @@ class AppointmentSeeder extends Seeder
                 'service_id' => $service->id,
                 'doctor_id' => $doctor->id,
                 'booking_type' => 'Online',
-                'schedule_date' => Carbon::now()->toDateString(),
+                'schedule_date' => $today,
                 'schedule_time' => '13:00:00',
                 'initial_complaint' => 'Pemeriksaan gigi',
-                'queue_number' => 'A003',
+                'queue_number' => "Q-{$todayFormatted}-003",
                 'status' => 'Dalam Periksa',
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
@@ -75,10 +80,10 @@ class AppointmentSeeder extends Seeder
                 'service_id' => $service->id,
                 'doctor_id' => $doctor->id,
                 'booking_type' => 'Walk-in',
-                'schedule_date' => Carbon::now()->toDateString(),
+                'schedule_date' => $tomorrow,
                 'schedule_time' => '09:00:00',
                 'initial_complaint' => 'Gatal-gatal pada kulit',
-                'queue_number' => 'A004',
+                'queue_number' => "Q-{$tomorrowFormatted}-001",
                 'status' => 'Disetujui',
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),

@@ -56,9 +56,9 @@ Route::apiResource('products', ProductController::class);
 
 // Finance & Services Routes
 // ==============================================
-// ADMIN ROUTES (Hanya bisa diakses Admin)
+// ADMIN & RECEPTIONIST ROUTES
 // ==============================================
-Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
+Route::middleware(['auth:sanctum', 'role:admin,resepsionis,Resepsionis'])->group(function () {
     Route::apiResource('users', UserController::class);
     
     // Clinic Settings & System Logs 
@@ -75,9 +75,9 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
 });
 
 // ==============================================
-// OWNER ROUTES (Pemilik Hewan / Owner)
+// OWNER & RECEPTIONIST ROUTES
 // ==============================================
-Route::middleware(['auth:sanctum', 'role:owner,pemilik hewan'])->group(function () {
+Route::middleware(['auth:sanctum', 'role:owner,pemilik hewan,resepsionis,Resepsionis'])->group(function () {
     Route::apiResource('pets', PetController::class);
     Route::apiResource('appointments', AppointmentController::class);
 });

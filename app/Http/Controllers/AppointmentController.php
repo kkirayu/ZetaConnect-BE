@@ -33,7 +33,7 @@ class AppointmentController extends Controller
         }
 
        
-        $appointments = $query->with(['owner', 'pet', 'service'])->orderBy('schedule_date', 'desc')->orderBy('schedule_time', 'asc')->paginate(10);
+        $appointments = $query->with(['owner', 'pet', 'service', 'doctor'])->orderBy('schedule_date', 'desc')->orderBy('schedule_time', 'asc')->paginate(100);
 
         return response()->json([
             'success' => true,
@@ -133,7 +133,7 @@ class AppointmentController extends Controller
                 Rule::exists('pets', 'id')->where('owner_id', $ownerId),
             ],
             'service_id'        => 'required|exists:services,id',
-            'doctor_id'         => 'nullable|exists:users,id',
+            'doctor_id'         => 'nullable|exists:doctors,doctor_id',
             'booking_type'      => 'required|in:Online,Walk-in',
             'schedule_date'     => 'required|date',
             'schedule_time'     => 'required|date_format:H:i',
