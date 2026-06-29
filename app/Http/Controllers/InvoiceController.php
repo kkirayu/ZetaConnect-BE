@@ -171,7 +171,7 @@ class InvoiceController extends Controller
         $validator = Validator::make($request->all(), [
             'discount'       => 'sometimes|numeric|min:0',
             'payment_method' => 'sometimes|in:Tunai,QRIS,Transfer,Debit',
-            'status'         => 'sometimes|in:Unpaid,Cancelled',
+            'status'         => 'sometimes|in:Unpaid,Paid,Cancelled',
         ]);
 
         if ($validator->fails()) {
