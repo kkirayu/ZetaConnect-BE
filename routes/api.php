@@ -65,6 +65,9 @@ Route::middleware(['auth:sanctum', 'role:admin,resepsionis,Resepsionis'])->group
     Route::get('clinic-settings', [ClinicSettingController::class, 'index']);
     Route::post('clinic-settings', [ClinicSettingController::class, 'update']);
     Route::get('/audit-logs', [AuditLogController::class, 'index']);
+    
+    // Admin Dashboard
+    Route::get('admin/dashboard/summary', [ReportController::class, 'dashboardSummary']);
 
     // Reports Group 
     Route::prefix('reports')->group(function () {
