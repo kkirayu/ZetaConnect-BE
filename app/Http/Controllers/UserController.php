@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
@@ -105,14 +106,8 @@ class UserController extends Controller
             $data = $request->except(['password', 'photo']);
 
             if ($request->hasFile('photo')) {
-                // Hapus foto lama jika ada
-                if ($user->photo && file_exists(public_path($user->photo))) {
-                    unlink(public_path($user->photo));
-                }
-                $file = $request->file('photo');
-                $filename = time() . '_' . $file->getClientOriginalName();
-                $file->move(public_path('uploads/users'), $filename);
-                $data['photo'] = 'uploads/users/' . $filename;
+                $path = $request->file('photo')->store('zetaconnect/users', 'cloudinary');
+                $data['photo'] = Storage::disk('cloudinary')->url($path);
             }
 
             $user->update($data);
@@ -171,13 +166,8 @@ class UserController extends Controller
             $data = $request->only(['name', 'phone_number', 'address']);
 
             if ($request->hasFile('photo')) {
-                if ($user->photo && file_exists(public_path($user->photo))) {
-                    unlink(public_path($user->photo));
-                }
-                $file = $request->file('photo');
-                $filename = time() . '_' . $file->getClientOriginalName();
-                $file->move(public_path('uploads/users'), $filename);
-                $data['photo'] = 'uploads/users/' . $filename;
+                $path = $request->file('photo')->store('zetaconnect/users', 'cloudinary');
+                $data['photo'] = Storage::disk('cloudinary')->url($path);
             }
 
             $user->update($data);
