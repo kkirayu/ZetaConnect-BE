@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\PharmacyController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\ClinicSettingController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\BackupController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\DoctorController;
@@ -68,6 +69,7 @@ Route::middleware(['auth:sanctum', 'role:admin,resepsionis,Resepsionis'])->group
     Route::get('clinic-settings', [ClinicSettingController::class, 'index']);
     Route::post('clinic-settings', [ClinicSettingController::class, 'update']);
     Route::get('/audit-logs', [AuditLogController::class, 'index']);
+    Route::get('/backup-database', [BackupController::class, 'download']);
     
     // Admin Dashboard
     Route::get('admin/dashboard/summary', [ReportController::class, 'dashboardSummary']);
