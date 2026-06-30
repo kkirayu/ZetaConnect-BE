@@ -91,6 +91,7 @@ class UserController extends Controller
                 'role'         => 'sometimes|in:Admin,Dokter,Resepsionis,Apoteker,Kasir,Owner',
                 'status'       => 'sometimes|in:Aktif,Tidak Aktif',
                 'address'      => 'sometimes|string',
+                'photo'        => 'sometimes|image|mimes:jpeg,png,jpg|max:2048',
             ]);
 
             if ($validator->fails()) {
@@ -101,7 +102,20 @@ class UserController extends Controller
                 $user->password = Hash::make($request->password);
             }
 
-            $user->update($request->except(['password']));
+            $data = $request->except(['password', 'photo']);
+
+            if ($request->hasFile('photo')) {
+                // Hapus foto lama jika ada
+                if ($user->photo && file_exists(public_path($user->photo))) {
+                    unlink(public_path($user->photo));
+                }
+                $file = $request->file('photo');
+                $filename = time() . '_' . $file->getClientOriginalName();
+                $file->move(public_path('uploads/users'), $filename);
+                $data['photo'] = 'uploads/users/' . $filename;
+            }
+
+            $user->update($data);
 
             return response()->json([
                 'success' => true,
