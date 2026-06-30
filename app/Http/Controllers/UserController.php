@@ -136,5 +136,57 @@ class UserController extends Controller
                 'message' => 'User berhasil dihapus'
             ], 200);
         }
+
+    public function updateProfile(Request $request)
+        {
+            $user = $request->user();
+
+            $validator = Validator::make($request->all(), [
+                'name'         => 'sometimes|string|max:255',
+                'phone_number' => 'sometimes|string',
+                'address'      => 'sometimes|string',
+                'photo'        => 'sometimes|image|mimes:jpeg,png,jpg|max:2048',
+                'current_password' => 'sometimes|string',
+                'new_password'     => 'sometimes|string|min:8',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validasi gagal',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            if ($request->has('current_password') && $request->has('new_password')) {
+                if (!Hash::check($request->current_password, $user->password)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Password saat ini tidak cocok'
+                    ], 400);
+                }
+                $user->password = Hash::make($request->new_password);
+            }
+
+            $data = $request->only(['name', 'phone_number', 'address']);
+
+            if ($request->hasFile('photo')) {
+                if ($user->photo && file_exists(public_path($user->photo))) {
+                    unlink(public_path($user->photo));
+                }
+                $file = $request->file('photo');
+                $filename = time() . '_' . $file->getClientOriginalName();
+                $file->move(public_path('uploads/users'), $filename);
+                $data['photo'] = 'uploads/users/' . $filename;
+            }
+
+            $user->update($data);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Profil berhasil diupdate',
+                'data'    => $user
+            ], 200);
+        }
 }
 

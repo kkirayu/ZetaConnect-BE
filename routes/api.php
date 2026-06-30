@@ -34,9 +34,12 @@ use App\Http\Controllers\ProductController;
 */
 
 // Auth User Session
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/user', function (Request $request) {
+        return $request->user()->load('pets');
+    });
+    Route::post('/user/profile', [UserController::class, 'updateProfile']);
+});
 
 // Authentication Open Routes (OTP, Register, Login)
 Route::post('/auth/register', [AuthController::class, 'register']);
