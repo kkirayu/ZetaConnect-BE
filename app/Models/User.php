@@ -31,6 +31,7 @@ class User extends Authenticatable
         'status',       
         'address',
         'otp_code',
+        'photo',
     ];
 
     /**
