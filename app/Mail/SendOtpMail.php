@@ -14,13 +14,15 @@ class SendOtpMail extends Mailable
     use Queueable, SerializesModels;
 
     public $otp;
+    public $type;
 
     /**
      * Create a new message instance.
      */
-    public function __construct($otp)
+    public function __construct($otp, $type = 'register')
     {
         $this->otp = $otp;
+        $this->type = $type;
     }
 
     /**
@@ -28,8 +30,12 @@ class SendOtpMail extends Mailable
      */
     public function envelope(): Envelope
     {
+        $subject = $this->type === 'reset' 
+            ? 'Kode OTP Reset Kata Sandi - ZetaConnect' 
+            : 'Kode OTP Verifikasi Akun Anda - ZetaConnect';
+
         return new Envelope(
-            subject: 'Kode OTP Verifikasi Akun Anda - ZetaConnect',
+            subject: $subject,
         );
     }
 
@@ -38,8 +44,10 @@ class SendOtpMail extends Mailable
      */
     public function content(): Content
     {
+        $view = $this->type === 'reset' ? 'emails.otp_reset' : 'emails.otp';
+
         return new Content(
-            view: 'emails.otp',
+            view: $view,
         );
     }
 

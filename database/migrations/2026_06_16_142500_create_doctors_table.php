@@ -20,7 +20,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // Tabel Jadwal Praktik Dokter (One-to-Many dari Doctors)
+        // Tabel Jadwal Praktik Dokter 
         Schema::create('doctor_schedules', function (Blueprint $table) {
             $table->id('schedule_id');
             $table->foreignId('doctor_id')->references('doctor_id')->on('doctors')->onDelete('cascade');
@@ -30,3 +30,5 @@ return new class extends Migration
         });
     }
 };
+
+
