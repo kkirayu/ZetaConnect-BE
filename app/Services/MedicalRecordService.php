@@ -9,9 +9,21 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class MedicalRecordService
 {
-    public function getAll(int $perPage = 10): LengthAwarePaginator
+    public function getAll(int $perPage = 10, ?int $petId = null, ?int $ownerId = null): LengthAwarePaginator
     {
-        return MedicalRecord::with(['pet', 'doctor', 'diagnosis'])->latest()->paginate($perPage);
+        $query = MedicalRecord::with(['pet', 'doctor', 'diagnosis']);
+        
+        if ($petId) {
+            $query->where('pet_id', $petId);
+        }
+        
+        if ($ownerId) {
+            $query->whereHas('pet', function ($q) use ($ownerId) {
+                $q->where('owner_id', $ownerId);
+            });
+        }
+        
+        return $query->latest()->paginate($perPage);
     }
 
     public function getById(int $id): MedicalRecord

@@ -149,6 +149,7 @@ Route::post('/feedbacks', [FeedbackController::class, 'store']);
 Route::get('/feedbacks', [FeedbackController::class, 'index']);
 Route::apiResource('doctors', DoctorController::class);
 Route::apiResource('pet-tips', PetTipController::class);
+Route::apiResource('medical-records', MedicalRecordController::class);
 
 Route::middleware('auth:sanctum')->prefix('doctor')->group(function () {
     // Diagnosis Dictionary Routes
@@ -161,7 +162,7 @@ Route::middleware('auth:sanctum')->prefix('doctor')->group(function () {
     Route::apiResource('vaccinations', VaccinationController::class);
 
     // Medical Records (SOAP) Routes
-    Route::apiResource('medical-records', MedicalRecordController::class);
+    
 
     // Lab Results Routes
     Route::apiResource('lab-results', LabResultController::class);
