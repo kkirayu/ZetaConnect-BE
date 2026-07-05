@@ -15,7 +15,7 @@ class InvoiceController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Invoice::with(['owner', 'cashier', 'appointment', 'items.item']);
+        $query = Invoice::with(['owner', 'cashier', 'appointment.pet', 'items']);
 
         if ($request->has('status')) {
             $query->where('status', $request->status);

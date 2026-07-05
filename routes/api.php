@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\PharmacyController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\ClinicSettingController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\BackupController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\DoctorController;
@@ -35,9 +36,12 @@ use App\Http\Controllers\CashierDashboardController;
 */
 
 // Auth User Session
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/user', function (Request $request) {
+        return $request->user()->load('pets');
+    });
+    Route::post('/user/profile', [UserController::class, 'updateProfile']);
+});
 
 // Authentication Open Routes (OTP, Register, Login)
 Route::post('/auth/register', [AuthController::class, 'register']);
@@ -72,6 +76,10 @@ Route::middleware(['auth:sanctum', 'role:admin,resepsionis,Resepsionis'])->group
     Route::get('clinic-settings', [ClinicSettingController::class, 'index']);
     Route::post('clinic-settings', [ClinicSettingController::class, 'update']);
     Route::get('/audit-logs', [AuditLogController::class, 'index']);
+    Route::get('/backup-database', [BackupController::class, 'download']);
+    
+    // Admin Dashboard
+    Route::get('admin/dashboard/summary', [ReportController::class, 'dashboardSummary']);
 
     // Reports Group
     Route::prefix('reports')->group(function () {
@@ -84,7 +92,7 @@ Route::middleware(['auth:sanctum', 'role:admin,resepsionis,Resepsionis'])->group
 // ==============================================
 // OWNER & RECEPTIONIST ROUTES
 // ==============================================
-Route::middleware(['auth:sanctum', 'role:owner,pemilik hewan,resepsionis,Resepsionis'])->group(function () {
+Route::middleware(['auth:sanctum', 'role:owner,pemilik hewan,resepsionis,Resepsionis,dokter,Dokter'])->group(function () {
     Route::apiResource('pets', PetController::class);
     Route::apiResource('appointments', AppointmentController::class);
 });
@@ -154,7 +162,7 @@ Route::post('/feedbacks', [FeedbackController::class, 'store']);
 Route::get('/feedbacks', [FeedbackController::class, 'index']);
 Route::apiResource('doctors', DoctorController::class);
 Route::apiResource('pet-tips', PetTipController::class);
-Route::apiResource('medical-records', MedicalRecordController::class);
+
 
 Route::middleware('auth:sanctum')->prefix('doctor')->group(function () {
     // Diagnosis Dictionary Routes
@@ -167,7 +175,7 @@ Route::middleware('auth:sanctum')->prefix('doctor')->group(function () {
     Route::apiResource('vaccinations', VaccinationController::class);
 
     // Medical Records (SOAP) Routes
-
+    Route::apiResource('medical-records', MedicalRecordController::class);
 
     // Lab Results Routes
     Route::apiResource('lab-results', LabResultController::class);

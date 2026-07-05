@@ -116,4 +116,76 @@ class ReportController extends Controller
             ]
         ], 200);
     }
+
+    public function dashboardSummary()
+    {
+        $today = now()->format('Y-m-d');
+        $thisMonth = now()->month;
+        $thisYear = now()->year;
+
+        // 1. Total Pendapatan Hari Ini
+        $totalRevenueToday = DB::table('payments')
+            ->whereDate('paid_at', $today)
+            ->where('status', 'Success')
+            ->sum('amount_paid');
+
+        // 2. Jumlah Staf Aktif
+        $activeStaffCount = DB::table('users')
+            ->whereIn('role', ['Admin', 'Dokter', 'Resepsionis', 'Apoteker', 'Kasir'])
+            ->where('status', 'Aktif')
+            ->count();
+
+        // 3. Total Pasien Bulan Ini (Unik berdasarkan pet_id)
+        $totalPatientsThisMonth = DB::table('appointments')
+            ->whereMonth('schedule_date', $thisMonth)
+            ->whereYear('schedule_date', $thisYear)
+            ->distinct('pet_id')
+            ->count('pet_id');
+
+        // 4. Kunjungan Hari Ini
+        $visitsToday = DB::table('appointments')
+            ->whereDate('schedule_date', $today)
+            ->count();
+
+        // 5. Statistik Pendapatan 7 Hari
+        $sevenDaysAgo = now()->subDays(6)->format('Y-m-d');
+        $revenueLast7Days = DB::table('payments')
+            ->select(DB::raw('DATE(paid_at) as date'), DB::raw('SUM(amount_paid) as total_revenue'))
+            ->whereDate('paid_at', '>=', $sevenDaysAgo)
+            ->where('status', 'Success')
+            ->groupBy(DB::raw('DATE(paid_at)'))
+            ->orderBy('date', 'asc')
+            ->get();
+
+        // 6. Jenis Pasien Terbanyak
+        $visitsBySpecies = DB::table('appointments')
+            ->join('pets', 'appointments.pet_id', '=', 'pets.id')
+            ->select('pets.species', DB::raw('COUNT(appointments.id) as count'))
+            ->groupBy('pets.species')
+            ->orderBy('count', 'desc')
+            ->get();
+
+        $totalSpeciesVisits = $visitsBySpecies->sum('count');
+        $speciesPercentage = $visitsBySpecies->map(function ($item) use ($totalSpeciesVisits) {
+            $percentage = $totalSpeciesVisits > 0 ? round(($item->count / $totalSpeciesVisits) * 100) : 0;
+            return [
+                'species' => $item->species,
+                'count' => $item->count,
+                'percentage' => $percentage
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Summary dashboard berhasil diambil',
+            'data' => [
+                'total_revenue_today' => $totalRevenueToday,
+                'active_staff_count' => $activeStaffCount,
+                'total_patients_this_month' => $totalPatientsThisMonth,
+                'visits_today' => $visitsToday,
+                'revenue_chart' => $revenueLast7Days,
+                'species_distribution' => $speciesPercentage,
+            ]
+        ], 200);
+    }
 }
