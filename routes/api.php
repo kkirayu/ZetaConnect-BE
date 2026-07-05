@@ -85,7 +85,7 @@ Route::middleware(['auth:sanctum', 'role:admin,resepsionis,Resepsionis'])->group
 // ==============================================
 // OWNER & RECEPTIONIST ROUTES
 // ==============================================
-Route::middleware(['auth:sanctum', 'role:owner,pemilik hewan,resepsionis,Resepsionis'])->group(function () {
+Route::middleware(['auth:sanctum', 'role:owner,pemilik hewan,resepsionis,Resepsionis,dokter,Dokter'])->group(function () {
     Route::apiResource('pets', PetController::class);
     Route::apiResource('appointments', AppointmentController::class);
 });
