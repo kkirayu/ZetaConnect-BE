@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 
 class SupplierController extends Controller
 {
@@ -33,6 +34,7 @@ class SupplierController extends Controller
             'company_name' => 'required|string|max:255',
             'sales_name' => 'required|string|max:255',
             'phone_number' => 'required|string|max:20',
+            'image' => 'nullable|image|max:1024',
         ]);
 
         if ($validator->fails()) {
@@ -42,7 +44,15 @@ class SupplierController extends Controller
             ], 422);
         }
 
-        $supplier = Supplier::create($validator->validated());
+        $supplierData = $request->except('image');
+
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('suppliers', 'cloudinary');
+            $supplierData['image_url'] = Storage::disk('cloudinary')->url($path);
+            $supplierData['image_public_id'] = $path;
+        }
+
+        $supplier = Supplier::create($supplierData);
 
         return response()->json([
             'success' => true,
@@ -82,9 +92,10 @@ class SupplierController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'company_name' => 'sometimes|string|max:255',
-            'sales_name' => 'sometimes|string|max:255',
-            'phone_number' => 'sometimes|string|max:20',
+            'company_name' => 'sometimes|required|string|max:255',
+            'sales_name' => 'sometimes|required|string|max:255',
+            'phone_number' => 'sometimes|required|string|max:20',
+            'image' => 'nullable|image|max:1024',
         ]);
 
         if ($validator->fails()) {
@@ -94,7 +105,18 @@ class SupplierController extends Controller
             ], 422);
         }
 
-        $supplier->update($validator->validated());
+        $supplierData = $request->except('image');
+
+        if ($request->hasFile('image')) {
+            if ($supplier->image_public_id) {
+                Storage::disk('cloudinary')->delete($supplier->image_public_id);
+            }
+            $path = $request->file('image')->store('suppliers', 'cloudinary');
+            $supplierData['image_url'] = Storage::disk('cloudinary')->url($path);
+            $supplierData['image_public_id'] = $path;
+        }
+
+        $supplier->update($supplierData);
 
         return response()->json([
             'success' => true,
@@ -113,6 +135,10 @@ class SupplierController extends Controller
                 'success' => false,
                 'message' => 'Supplier tidak ditemukan'
             ], 404);
+        }
+
+        if ($supplier->image_public_id) {
+            Storage::disk('cloudinary')->delete($supplier->image_public_id);
         }
 
         $supplier->delete();
