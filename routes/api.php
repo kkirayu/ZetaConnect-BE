@@ -134,7 +134,7 @@ Route::apiResource('feedbacks', FeedbackController::class);
 
 Route::get('/audit-logs', [AuditLogController::class, 'index']);
 
-Route::prefix('pharmacy')->group(function () {
+Route::middleware(['auth:sanctum', 'role:apoteker,farmasi,Apoteker,Farmasi,admin,Admin'])->prefix('pharmacy')->group(function () {
     Route::get('/dashboard', [PharmacyController::class, 'dashboard']);
     Route::get('/low-stock', [PharmacyController::class, 'lowStock']);
     Route::get('/patient-demographics', [PharmacyController::class, 'patientDemographics']);
@@ -154,7 +154,9 @@ Route::prefix('pharmacy')->group(function () {
 });
 
 //cashier
-Route::get('cashier/dashboard', [CashierDashboardController::class, 'dashboard']);
+Route::middleware(['auth:sanctum', 'role:kasir,Kasir,admin,Admin'])->prefix('cashier')->group(function () {
+    Route::get('/dashboard', [CashierDashboardController::class, 'dashboard']);
+});
 
 // Other Master Data Routes
 Route::apiResource('suppliers', SupplierController::class);
