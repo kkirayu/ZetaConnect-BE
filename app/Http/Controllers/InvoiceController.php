@@ -115,7 +115,7 @@ class InvoiceController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Invoice berhasil dibuat',
-                'data'    => $invoice->load(['owner', 'cashier', 'appointment', 'items']),
+                'data'    => $invoice->load(['owner', 'cashier', 'appointment', 'items.item']),
             ], 201);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -132,7 +132,7 @@ class InvoiceController extends Controller
      */
     public function show($id)
     {
-        $invoice = Invoice::with(['owner', 'cashier', 'appointment', 'items', 'payments'])->find($id);
+        $invoice = Invoice::with(['owner', 'cashier', 'appointment', 'items.item', 'payments'])->find($id);
 
         if (!$invoice) {
             return response()->json([
@@ -171,7 +171,12 @@ class InvoiceController extends Controller
         $validator = Validator::make($request->all(), [
             'discount'       => 'sometimes|numeric|min:0',
             'payment_method' => 'sometimes|in:Tunai,QRIS,Transfer,Debit',
-            'status'         => 'sometimes|in:Unpaid,Paid,Cancelled',
+            'status'         => 'sometimes|in:Unpaid,Cancelled',
+            'items'          => 'sometimes|array|min:1',
+            'items.*.item_type' => 'required_with:items|in:Service,Product',
+            'items.*.item_id'   => 'required_with:items|integer',
+            'items.*.quantity'  => 'required_with:items|integer|min:1',
+            'items.*.price'     => 'required_with:items|numeric|min:0',
         ]);
 
         if ($validator->fails()) {
@@ -184,18 +189,54 @@ class InvoiceController extends Controller
 
         $data = $validator->validated();
 
-        // Hitung ulang total_amount jika discount berubah
-        if (isset($data['discount'])) {
-            $data['total_amount'] = max(0, $invoice->subtotal - $data['discount']);
+        DB::beginTransaction();
+        try {
+            if (isset($data['items'])) {
+                // Hapus item lama
+                $invoice->items()->delete();
+                
+                $subtotal = 0;
+                foreach ($data['items'] as $item) {
+                    $itemSubtotal = $item['price'] * $item['quantity'];
+                    $subtotal += $itemSubtotal;
+                    
+                    $invoice->items()->create([
+                        'item_type' => $item['item_type'],
+                        'item_id'   => $item['item_id'],
+                        'quantity'  => $item['quantity'],
+                        'price'     => $item['price'],
+                        'subtotal'  => $itemSubtotal,
+                    ]);
+                }
+                $invoice->subtotal = $subtotal;
+            }
+
+            // Hitung ulang total_amount
+            $discount = isset($data['discount']) ? $data['discount'] : $invoice->discount;
+            $data['total_amount'] = max(0, $invoice->subtotal - $discount);
+            
+            if (isset($data['items'])) {
+                unset($data['items']);
+                $data['subtotal'] = $invoice->subtotal;
+            }
+
+            $invoice->update($data);
+            
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Invoice berhasil diupdate',
+                'data'    => $invoice->fresh()->load(['owner', 'cashier', 'items.item']),
+            ], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengupdate invoice',
+                'error'   => $e->getMessage()
+            ], 500);
         }
-
-        $invoice->update($data);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Invoice berhasil diupdate',
-            'data'    => $invoice->fresh()->load(['owner', 'cashier', 'items']),
-        ], 200);
     }
 
     /**

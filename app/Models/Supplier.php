@@ -10,5 +10,7 @@ class Supplier extends Model
         'company_name',
         'sales_name',
         'phone_number',
+        'image_url',
+        'image_public_id',
     ];
 }

@@ -33,7 +33,7 @@ class CashierDashboardController extends Controller
         }
 
         // 3. Stats (Diproses, Menunggu Bayar, Selesai)
-        $invoicesToday = Invoice::with(['owner', 'appointment.pet', 'items'])
+        $invoicesToday = Invoice::with(['owner', 'appointment.pet', 'items.item'])
             ->whereDate('created_at', $today)
             ->orderBy('created_at', 'desc')
             ->get();
@@ -50,20 +50,22 @@ class CashierDashboardController extends Controller
             'selesai' => $invoicesToday->where('status', 'Paid')->count(),
         ];
 
-        // 4. Hourly Revenue Data (Trend Chart Simulation)
+        // 4. 24-Hour Revenue Data in 8 Sessions (3 Hours each)
         $hourlyRevenue = [];
-        $currentHour = (int) now()->format('H');
-        // Get last 8 hours data
-        for ($i = max(0, $currentHour - 7); $i <= $currentHour; $i++) {
-            $hourStart = $today->copy()->setTime($i, 0, 0);
-            $hourEnd = $today->copy()->setTime($i, 59, 59);
+        for ($i = 0; $i < 8; $i++) {
+            $startHour = $i * 3;
+            $endHour = $startHour + 2;
+
+            $hourStart = $today->copy()->setTime($startHour, 0, 0);
+            $hourEnd = $today->copy()->setTime($endHour, 59, 59);
             
             $rev = Invoice::whereBetween('created_at', [$hourStart, $hourEnd])
                 ->where('status', 'Paid')
                 ->sum('total_amount');
             
             $hourlyRevenue[] = [
-                'hour' => $hourStart->format('H:i'),
+                'hour' => sprintf("%02d:00 - %02d:59", $startHour, $endHour),
+                'short_label' => sprintf("%02d-%02d", $startHour, $endHour),
                 'revenue' => (float) $rev
             ];
         }
@@ -103,14 +105,13 @@ class CashierDashboardController extends Controller
 
             $itemsSummary = [];
             foreach ($inv->items as $item) {
-                // If we want to show item names, we'd need to load the polymorphic relation or join. 
-                // Since items relation has item_type and item_id, we just show generic for now
-                $itemsSummary[] = "{$item->quantity}x Item"; 
+                $itemName = $item->item ? $item->item->name : 'Item';
+                $itemsSummary[] = "{$item->quantity}x {$itemName}"; 
             }
             $itemsStr = count($itemsSummary) > 0 ? implode(', ', $itemsSummary) : 'No items';
 
             $queueList[] = [
-                'id' => '#INV-' . str_pad($inv->id, 4, '0', STR_PAD_LEFT),
+                'id' => $inv->id,
                 'name' => "{$ownerName} ({$petName} - {$species})",
                 'items' => $itemsStr,
                 'time' => Carbon::parse($inv->created_at)->format('h:i A'),

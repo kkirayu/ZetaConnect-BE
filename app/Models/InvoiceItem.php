@@ -26,4 +26,10 @@ class InvoiceItem extends Model
     {
         return $this->belongsTo(Invoice::class);
     }
+
+    public function item()
+    {
+        // Morph to Product or Service based on item_type and item_id
+        return $this->morphTo(__FUNCTION__, 'item_type', 'item_id');
+    }
 }
