@@ -28,6 +28,7 @@ use App\Http\Controllers\EReceiptController;
 use App\Http\Controllers\MedicalCertificateController;
 use App\Http\Controllers\StockMutationController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\CashierDashboardController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -70,8 +71,8 @@ Route::apiResource('products', ProductController::class);
 // ==============================================
 Route::middleware(['auth:sanctum', 'role:admin,resepsionis,Resepsionis'])->group(function () {
     Route::apiResource('users', UserController::class);
-    
-    // Clinic Settings & System Logs 
+
+    // Clinic Settings & System Logs
     Route::get('clinic-settings', [ClinicSettingController::class, 'index']);
     Route::post('clinic-settings', [ClinicSettingController::class, 'update']);
     Route::get('/audit-logs', [AuditLogController::class, 'index']);
@@ -80,7 +81,7 @@ Route::middleware(['auth:sanctum', 'role:admin,resepsionis,Resepsionis'])->group
     // Admin Dashboard
     Route::get('admin/dashboard/summary', [ReportController::class, 'dashboardSummary']);
 
-    // Reports Group 
+    // Reports Group
     Route::prefix('reports')->group(function () {
         Route::get('financial', [ReportController::class, 'financial']);
         Route::get('demographics', [ReportController::class, 'demographics']);
@@ -99,11 +100,12 @@ Route::middleware(['auth:sanctum', 'role:owner,pemilik hewan,resepsionis,Resepsi
 // ==============================================
 // PUBLIC ATAU SHARED ROUTES
 // ==============================================
-// Finance & Services Routes 
+// Finance & Services Routes
 Route::apiResource('services', ServiceController::class)->except(['create', 'edit']);
 Route::apiResource('invoices', InvoiceController::class)->except(['create', 'edit']);
 Route::apiResource('payments', PaymentController::class)->except(['create', 'edit', 'update']);
 Route::patch('payments/{id}/refund', [PaymentController::class, 'refund']);
+
 
 // Clinic Settings & System Logs
 Route::get('clinic-settings', [ClinicSettingController::class, 'index']);
@@ -118,7 +120,7 @@ Route::prefix('reports')->group(function () {
 });
 
 // Pharmacy Group
-// Pharmacy Group 
+// Pharmacy Group
 Route::prefix('auth')->group(function(){
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
@@ -151,6 +153,9 @@ Route::prefix('pharmacy')->group(function () {
     Route::patch('/prescriptions/{medicalRecordId}/status', [PharmacyController::class, 'updatePrescriptionStatus']);
 });
 
+//cashier
+Route::get('cashier/dashboard', [CashierDashboardController::class, 'dashboard']);
+
 // Other Master Data Routes
 Route::apiResource('suppliers', SupplierController::class);
 Route::post('/feedbacks', [FeedbackController::class, 'store']);
@@ -170,7 +175,7 @@ Route::middleware('auth:sanctum')->prefix('doctor')->group(function () {
     Route::apiResource('vaccinations', VaccinationController::class);
 
     // Medical Records (SOAP) Routes
-    
+
 
     // Lab Results Routes
     Route::apiResource('lab-results', LabResultController::class);
