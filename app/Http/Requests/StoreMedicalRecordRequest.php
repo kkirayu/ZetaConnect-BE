@@ -16,6 +16,7 @@ class StoreMedicalRecordRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'appointment_id' => ['required', 'integer', 'exists:appointments,id'],
             'pet_id' => ['required', 'integer', 'exists:pets,id'],
             'diagnosis_dictionary_id' => ['required', 'integer', 'exists:diagnosis_dictionary,id'],
             'weight' => ['required', 'numeric', 'min:0.01', 'max:999.99'],
@@ -28,6 +29,8 @@ class StoreMedicalRecordRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'appointment_id.required' => 'Appointment ID wajib diisi.',
+            'appointment_id.exists' => 'Appointment tidak valid.',
             'pet_id.required' => 'Pet ID wajib diisi.',
             'pet_id.exists' => 'Pet yang dipilih tidak ditemukan.',
             'diagnosis_dictionary_id.required' => 'Diagnosis wajib dipilih.',
