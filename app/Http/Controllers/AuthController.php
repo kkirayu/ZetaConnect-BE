@@ -91,8 +91,7 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Registration successful. Please verify OTP.',
-            'email' => $user->email,
-            'otp_code' => $otp 
+            'email' => $user->email
         ], 201);
     }
 
@@ -153,5 +152,71 @@ class AuthController extends Controller
             'token_type' => 'Bearer',
             'user' => $user
         ], 200);
+    }
+
+    public function forgotPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|string|email'
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return response()->json(['message' => 'Email tidak terdaftar.'], 404);
+        }
+
+        $otp = sprintf('%06d', mt_rand(0, 999999));
+        $user->update(['otp_code' => $otp]);
+
+        try {
+            Mail::to($user->email)->send(new SendOtpMail($otp, 'reset'));
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to send OTP email: ' . $e->getMessage());
+        }
+
+        return response()->json(['message' => 'OTP berhasil dikirim.'], 200);
+    }
+
+    public function checkOtp(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|string|email',
+            'otp_code' => 'required|string|size:6'
+        ]);
+
+        $user = User::where('email', $request->email)
+                    ->where('otp_code', $request->otp_code)
+                    ->first();
+
+        if (!$user) {
+            return response()->json(['message' => 'Kode OTP tidak valid.'], 400);
+        }
+
+        return response()->json(['message' => 'Kode OTP valid.'], 200);
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|string|email',
+            'otp_code' => 'required|string|size:6',
+            'password' => 'required|string|min:6'
+        ]);
+
+        $user = User::where('email', $request->email)
+                    ->where('otp_code', $request->otp_code)
+                    ->first();
+
+        if (!$user) {
+            return response()->json(['message' => 'Kode OTP tidak valid atau sudah kadaluarsa.'], 400);
+        }
+
+        $user->update([
+            'password' => \Illuminate\Support\Facades\Hash::make($request->password),
+            'otp_code' => null
+        ]);
+
+        return response()->json(['message' => 'Kata sandi berhasil diubah.'], 200);
     }
 }
