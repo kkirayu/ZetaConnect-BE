@@ -17,6 +17,7 @@ class Invoice extends Model
         'id',
         'appointment_id',
         'owner_id',
+        'client_name',
         'cashier_id',
         'subtotal',
         'discount',

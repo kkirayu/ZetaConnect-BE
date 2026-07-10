@@ -33,7 +33,12 @@ class InvoiceController extends Controller
             $query->whereDate('created_at', $request->date);
         }
 
-        $invoices = $query->orderBy('created_at', 'desc')->paginate(10);
+        if ($request->has('limit') && $request->limit === 'all') {
+            $invoices = $query->orderBy('created_at', 'desc')->get();
+        } else {
+            $limit = $request->get('limit', 10);
+            $invoices = $query->orderBy('created_at', 'desc')->paginate($limit);
+        }
 
         return response()->json([
             'success' => true,
@@ -48,8 +53,9 @@ class InvoiceController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'appointment_id'         => 'required|exists:appointments,id|unique:invoices,appointment_id',
-            'owner_id'               => 'required|exists:users,id',
+            'appointment_id'         => 'nullable|exists:appointments,id|unique:invoices,appointment_id',
+            'owner_id'               => 'nullable|exists:users,id',
+            'client_name'            => 'nullable|string|max:255',
             'cashier_id'             => 'required|exists:users,id',
             'discount'               => 'nullable|numeric|min:0',
             'payment_method'         => 'required|in:Tunai,QRIS,Transfer,Debit',
@@ -97,6 +103,7 @@ class InvoiceController extends Controller
                 'id'             => $invoiceId,
                 'appointment_id' => $request->appointment_id,
                 'owner_id'       => $request->owner_id,
+                'client_name'    => $request->client_name,
                 'cashier_id'     => $request->cashier_id,
                 'subtotal'       => $subtotal,
                 'discount'       => $discount,
