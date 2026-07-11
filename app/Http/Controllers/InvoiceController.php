@@ -83,10 +83,16 @@ class InvoiceController extends Controller
             $eReceipts = \App\Models\EReceipt::where('pet_id', $apt->pet_id)
                 ->where('status', 'Completed')
                 ->whereDate('created_at', $apt->schedule_date)
-                ->with('items')
+                ->with(['items', 'doctor'])
                 ->get();
 
+            $recipeDoctorName = null;
+
             foreach ($eReceipts as $receipt) {
+                if (!$recipeDoctorName && $receipt->doctor) {
+                    $recipeDoctorName = $receipt->doctor->name;
+                }
+
                 foreach ($receipt->items as $item) {
                     // Cari product berdasarkan nama obat
                     $product = \App\Models\Product::where('name', $item->medicine_name)->first();
@@ -117,7 +123,7 @@ class InvoiceController extends Controller
                     'owner_id' => $apt->pet && $apt->pet->owner ? $apt->pet->owner->id : null,
                 ],
                 'doctor' => [
-                    'name' => $apt->doctor ? $apt->doctor->name : 'Unknown',
+                    'name' => $recipeDoctorName ?: ($apt->doctor ? $apt->doctor->name : 'Unknown'),
                 ],
                 'services' => $services,
                 'products' => $productsToBill,
