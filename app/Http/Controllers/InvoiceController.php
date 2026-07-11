@@ -51,6 +51,88 @@ class InvoiceController extends Controller
     }
 
     /**
+     * Ambil tagihan tertunda (Appointment Selesai yang belum ada invoice).
+     */
+    public function pendingBilling()
+    {
+        // 1. Ambil semua appointment yang statusnya 'Selesai' dan tidak memiliki invoice.
+        $appointments = \App\Models\Appointment::with(['pet.owner', 'service', 'doctor'])
+            ->where('status', 'Selesai')
+            ->whereDoesntHave('invoice')
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        $result = [];
+
+        foreach ($appointments as $apt) {
+            // 2. Format Jasa Layanan
+            $services = [];
+            if ($apt->service) {
+                $services[] = [
+                    'item_type' => 'Service',
+                    'item_id' => $apt->service->id,
+                    'name' => $apt->service->name,
+                    'quantity' => 1,
+                    'price' => $apt->service->price,
+                    'subtotal' => $apt->service->price,
+                ];
+            }
+
+            // 3. Format Resep Obat (Cari EReceipt yang Completed untuk pasien ini hari ini)
+            $productsToBill = [];
+            $eReceipts = \App\Models\EReceipt::where('pet_id', $apt->pet_id)
+                ->where('status', 'Completed')
+                ->whereDate('created_at', $apt->schedule_date)
+                ->with('items')
+                ->get();
+
+            foreach ($eReceipts as $receipt) {
+                foreach ($receipt->items as $item) {
+                    // Cari product berdasarkan nama obat
+                    $product = \App\Models\Product::where('name', $item->medicine_name)->first();
+                    $price = $product ? $product->selling_price : 0;
+                    $subtotal = $price * $item->quantity;
+
+                    $productsToBill[] = [
+                        'item_type' => 'Product',
+                        'item_id' => $product ? $product->id : 0,
+                        'name' => $item->medicine_name,
+                        'quantity' => $item->quantity,
+                        'price' => $price,
+                        'subtotal' => $subtotal,
+                    ];
+                }
+            }
+
+            $totalServices = collect($services)->sum('subtotal');
+            $totalProducts = collect($productsToBill)->sum('subtotal');
+
+            $result[] = [
+                'appointment_id' => $apt->id,
+                'queue_number' => $apt->queue_number ?? $apt->id,
+                'patient' => [
+                    'name' => $apt->pet ? $apt->pet->name : 'Unknown',
+                    'owner_name' => $apt->pet && $apt->pet->owner ? $apt->pet->owner->name : 'Unknown',
+                    'owner_id' => $apt->pet && $apt->pet->owner ? $apt->pet->owner->id : null,
+                ],
+                'doctor' => [
+                    'name' => $apt->doctor ? $apt->doctor->name : 'Unknown',
+                ],
+                'services' => $services,
+                'products' => $productsToBill,
+                'total_estimation' => $totalServices + $totalProducts,
+                'raw_created_at' => $apt->created_at,
+            ];
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Daftar tagihan tertunda berhasil diambil',
+            'data'    => $result,
+        ], 200);
+    }
+
+    /**
      * Simpan invoice baru beserta item-itemnya.
      */
     public function store(Request $request)
