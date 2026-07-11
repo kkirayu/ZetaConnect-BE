@@ -133,7 +133,7 @@ class CustomScenarioSeeder extends Seeder
         ]);
 
         // Invoice 1: Paid
-        $invPaidId = "INV-{$todayStr}-001";
+        $invPaidId = "INV-{$todayStr}-001-" . rand(1000, 9999);
         DB::table('invoices')->insert([
             'id' => $invPaidId,
             'appointment_id' => $appPaid->id,
@@ -161,7 +161,7 @@ class CustomScenarioSeeder extends Seeder
         ]);
 
         // Invoice 2: Unpaid
-        $invUnpaidId = "INV-{$todayStr}-002";
+        $invUnpaidId = "INV-{$todayStr}-002-" . rand(1000, 9999);
         DB::table('invoices')->insert([
             'id' => $invUnpaidId,
             'appointment_id' => $appUnpaid->id,
