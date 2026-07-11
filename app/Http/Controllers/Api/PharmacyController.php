@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\Pet;
 use App\Models\Appointment;
 use App\Models\EReceipt;
+use App\Models\StockMutation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
@@ -288,18 +289,46 @@ class PharmacyController extends Controller
                 'status' => 'required|in:Pending,Ditebus,Completed,Selesai'
             ]);
 
-            $record = EReceipt::findOrFail($id);
+            $record = EReceipt::with('items')->findOrFail($id);
             
             // Konversi status frontend ke backend
             $newStatus = in_array($request->status, ['Ditebus', 'Completed', 'Selesai']) ? 'Completed' : 'Pending';
 
-            $record->update(['status' => $newStatus]);
+            if ($record->status !== 'Completed' && $newStatus === 'Completed') {
+                DB::beginTransaction();
+                
+                $record->update(['status' => $newStatus]);
+
+                // Kurangi stok dan catat mutasi untuk setiap item
+                foreach ($record->items as $item) {
+                    $product = Product::where('name', $item->medicine_name)->first();
+                    if ($product) {
+                        $product->current_stock -= $item->quantity;
+                        $product->save();
+
+                        StockMutation::create([
+                            'product_id' => $product->id,
+                            'supplier_id' => null, // Resep keluar tidak memiliki supplier
+                            'mutation_type' => 'Out',
+                            'quantity' => $item->quantity,
+                            'date' => now(),
+                        ]);
+                    }
+                }
+                
+                DB::commit();
+            } else {
+                $record->update(['status' => $newStatus]);
+            }
 
             return response()->json([
                 'message' => "Status resep berhasil diubah ke '{$newStatus}'."
             ]);
 
         } catch (\Exception $e) {
+            if (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
 
             Log::error('Update Prescription Status Error', [
                 'message' => $e->getMessage()
