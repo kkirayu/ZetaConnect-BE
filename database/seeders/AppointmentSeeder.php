@@ -17,12 +17,12 @@ class AppointmentSeeder extends Seeder
     public function run(): void
     {
         $owner = User::where('role', 'Owner')->first() ?? User::first();
-        $doctor = User::where('role', 'Dokter')->first() ?? User::skip(1)->first();
+        $doctor = \App\Models\Doctor::first();
         $pet = Pet::first();
         $service = Service::first();
 
         if (!$owner || !$doctor || !$pet || !$service) {
-            $this->command->warn('Missing prerequisites to seed Appointments. Please ensure Users (owner, doctor), Pet, and Service exist.');
+            $this->command->warn('Missing prerequisites to seed Appointments. Please ensure Users (owner), Doctor, Pet, and Service exist.');
             return;
         }
 
@@ -36,7 +36,7 @@ class AppointmentSeeder extends Seeder
                 'owner_id' => $owner->id,
                 'pet_id' => $pet->id,
                 'service_id' => $service->id,
-                'doctor_id' => $doctor->id,
+                'doctor_id' => $doctor->doctor_id,
                 'booking_type' => 'Online',
                 'schedule_date' => $today,
                 'schedule_time' => '10:00:00',
@@ -50,7 +50,7 @@ class AppointmentSeeder extends Seeder
                 'owner_id' => $owner->id,
                 'pet_id' => $pet->id,
                 'service_id' => $service->id,
-                'doctor_id' => $doctor->id,
+                'doctor_id' => $doctor->doctor_id,
                 'booking_type' => 'Walk-in',
                 'schedule_date' => $today,
                 'schedule_time' => '11:00:00',
@@ -64,7 +64,7 @@ class AppointmentSeeder extends Seeder
                 'owner_id' => $owner->id,
                 'pet_id' => $pet->id,
                 'service_id' => $service->id,
-                'doctor_id' => $doctor->id,
+                'doctor_id' => $doctor->doctor_id,
                 'booking_type' => 'Online',
                 'schedule_date' => $today,
                 'schedule_time' => '13:00:00',
@@ -78,7 +78,7 @@ class AppointmentSeeder extends Seeder
                 'owner_id' => $owner->id,
                 'pet_id' => $pet->id,
                 'service_id' => $service->id,
-                'doctor_id' => $doctor->id,
+                'doctor_id' => $doctor->doctor_id,
                 'booking_type' => 'Walk-in',
                 'schedule_date' => $tomorrow,
                 'schedule_time' => '09:00:00',
