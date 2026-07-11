@@ -6,8 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Pet;
 use App\Models\Appointment;
-use App\Models\EPrescription;
-use App\Models\MedicalRecord;
+use App\Models\EReceipt;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
@@ -203,11 +202,10 @@ class PharmacyController extends Controller
     public function prescriptions(Request $request)
     {
         try {
-            $query = MedicalRecord::whereHas('prescriptions')
-                ->with([
+            $query = EReceipt::with([
                     'pet.owner',
                     'doctor',
-                    'prescriptions.product'
+                    'items'
                 ]);
 
             // Filter pencarian
@@ -227,22 +225,20 @@ class PharmacyController extends Controller
             // Filter status
             if ($request->has('status') && $request->status !== '') {
                 $status = $request->status;
-                $query->whereHas('prescriptions', function ($q) use ($status) {
-                    $q->where('status', $status);
-                });
+                if ($status === 'Selesai' || $status === 'Ditebus') $status = 'Completed';
+                
+                $query->where('status', $status);
             }
 
             $records = $query->orderByDesc('created_at')->get();
 
             $mapped = $records->map(function ($record) {
-                // Tentukan status resep keseluruhan berdasarkan items
-                $statuses = $record->prescriptions->pluck('status')->unique();
-                $overallStatus = 'Pending';
-                if ($statuses->every(fn($s) => $s === 'Ditebus')) {
-                    $overallStatus = 'Selesai';
-                } elseif ($statuses->contains('Ditebus') && $statuses->contains('Pending')) {
-                    $overallStatus = 'Sebagian Ditebus';
-                }
+                // Di database EReceipt, status adalah 'Pending' atau 'Completed'
+                // Frontend lama menggunakan 'Pending', 'Sebagian Ditebus', 'Selesai'
+                $overallStatus = $record->status === 'Completed' ? 'Selesai' : 'Pending';
+                
+                // Frontend juga butuh item.status ('Pending' atau 'Ditebus')
+                $itemStatus = $record->status === 'Completed' ? 'Ditebus' : 'Pending';
 
                 return [
                     'id'            => $record->id,
@@ -254,13 +250,13 @@ class PharmacyController extends Controller
                     'owner_name'    => $record->pet?->owner?->name ?? '-',
                     'doctor_name'   => $record->doctor?->name ?? '-',
                     'status'        => $overallStatus,
-                    'items'         => $record->prescriptions->map(function ($item) {
+                    'items'         => $record->items->map(function ($item) use ($itemStatus) {
                         return [
                             'id'           => $item->id,
-                            'product_name' => $item->product?->name ?? 'Produk tidak ditemukan',
+                            'product_name' => $item->medicine_name ?? 'Produk tidak ditemukan',
                             'quantity'     => $item->quantity,
-                            'instructions' => $item->instructions,
-                            'status'       => $item->status,
+                            'instructions' => trim($item->dosage . ' ' . $item->frequency),
+                            'status'       => $itemStatus,
                         ];
                     }),
                 ];
@@ -285,23 +281,22 @@ class PharmacyController extends Controller
     /**
      * Update status semua item resep dalam satu rekam medis
      */
-    public function updatePrescriptionStatus(Request $request, $medicalRecordId)
+    public function updatePrescriptionStatus(Request $request, $id)
     {
         try {
             $request->validate([
-                'status' => 'required|in:Pending,Ditebus'
+                'status' => 'required|in:Pending,Ditebus,Completed,Selesai'
             ]);
 
-            $record = MedicalRecord::findOrFail($medicalRecordId);
+            $record = EReceipt::findOrFail($id);
+            
+            // Konversi status frontend ke backend
+            $newStatus = in_array($request->status, ['Ditebus', 'Completed', 'Selesai']) ? 'Completed' : 'Pending';
 
-            // Update semua e_prescriptions milik medical_record ini
-            EPrescription::where('medical_record_id', $medicalRecordId)
-                ->update(['status' => $request->status]);
-
-            $statusLabel = $request->status === 'Ditebus' ? 'Selesai' : 'Pending';
+            $record->update(['status' => $newStatus]);
 
             return response()->json([
-                'message' => "Status resep berhasil diubah ke '{$statusLabel}'."
+                'message' => "Status resep berhasil diubah ke '{$newStatus}'."
             ]);
 
         } catch (\Exception $e) {
