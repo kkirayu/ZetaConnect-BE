@@ -246,18 +246,18 @@ class PharmacyController extends Controller
 
                 return [
                     'id'            => $record->id,
-                    'prescription_code' => 'RX-' . str_pad($record->id, 4, '0', STR_PAD_LEFT),
+                    'prescription_code' => 'RX-' . str_pad((string)$record->id, 4, '0', STR_PAD_LEFT),
                     'created_at'    => $record->created_at,
                     'time'          => $record->created_at ? $record->created_at->format('H:i') : '-',
                     'date'          => $record->created_at ? $record->created_at->format('d M Y') : '-',
-                    'patient_name'  => $record->pet->name ?? '-',
-                    'owner_name'    => $record->pet->owner->name ?? '-',
-                    'doctor_name'   => $record->doctor->name ?? '-',
+                    'patient_name'  => $record->pet?->name ?? '-',
+                    'owner_name'    => $record->pet?->owner?->name ?? '-',
+                    'doctor_name'   => $record->doctor?->name ?? '-',
                     'status'        => $overallStatus,
                     'items'         => $record->prescriptions->map(function ($item) {
                         return [
                             'id'           => $item->id,
-                            'product_name' => $item->product->name ?? 'Produk tidak ditemukan',
+                            'product_name' => $item->product?->name ?? 'Produk tidak ditemukan',
                             'quantity'     => $item->quantity,
                             'instructions' => $item->instructions,
                             'status'       => $item->status,
