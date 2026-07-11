@@ -110,6 +110,7 @@ class InvoiceController extends Controller
             $result[] = [
                 'appointment_id' => $apt->id,
                 'queue_number' => $apt->queue_number ?? $apt->id,
+                'schedule_date' => $apt->schedule_date,
                 'patient' => [
                     'name' => $apt->pet ? $apt->pet->name : 'Unknown',
                     'owner_name' => $apt->pet && $apt->pet->owner ? $apt->pet->owner->name : 'Unknown',
