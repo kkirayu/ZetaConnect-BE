@@ -28,7 +28,7 @@ class CustomScenarioSeeder extends Seeder
         // --- DASHBOARD MOCK DATA ---
         
         // 1. Add some extra pets with different species to populate "Jenis Pasien Terbanyak"
-        $speciesList = ['Kucing', 'Anjing', 'Burung', 'Kelinci', 'Hamster'];
+        $speciesList = ['Kucing', 'Anjing', 'Burung', 'Lainnya'];
         $pets = [];
         for ($i = 0; $i < 10; $i++) {
             $pets[] = Pet::create([
