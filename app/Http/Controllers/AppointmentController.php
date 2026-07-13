@@ -148,7 +148,44 @@ class AppointmentController extends Controller
 
         $data = $validator->validated();
         
-        
+        if (empty($data['doctor_id'])) {
+            $dayOfWeek = date('l', strtotime($data['schedule_date']));
+            $dayMap = [
+                'Monday' => 'Senin', 'Tuesday' => 'Selasa', 'Wednesday' => 'Rabu',
+                'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu', 'Sunday' => 'Minggu'
+            ];
+            $hariPraktik = $dayMap[$dayOfWeek];
+            
+            $sessionTimes = [
+                '08:00' => 'Sesi 1', '09:00' => 'Sesi 2', '10:00' => 'Sesi 3',
+                '11:00' => 'Sesi 4', '12:00' => 'Sesi 5', '13:00' => 'Sesi 6',
+                '14:00' => 'Sesi 7', '15:00' => 'Sesi 8'
+            ];
+            
+            $timeKey = substr($data['schedule_time'], 0, 5);
+            $sessionName = $sessionTimes[$timeKey] ?? null;
+
+            if ($sessionName) {
+                $scheduledDoctors = \App\Models\DoctorSchedule::where('hari_praktik', $hariPraktik)
+                                        ->where('sesi_praktik', $sessionName)
+                                        ->pluck('doctor_id');
+
+                if ($scheduledDoctors->isNotEmpty()) {
+                    foreach ($scheduledDoctors as $docId) {
+                        $isBooked = Appointment::whereDate('schedule_date', $data['schedule_date'])
+                            ->where('schedule_time', 'like', $timeKey . '%')
+                            ->where('doctor_id', $docId)
+                            ->whereNotIn('status', ['Batal'])
+                            ->exists();
+                            
+                        if (!$isBooked) {
+                            $data['doctor_id'] = $docId;
+                            break;
+                        }
+                    }
+                }
+            }
+        }        
         if (empty($data['queue_number'])) {
             $countToday = Appointment::whereDate('schedule_date', $data['schedule_date'])->count() + 1;
             $data['queue_number'] = 'Q-' . date('Ymd', strtotime($data['schedule_date'])) . '-' . str_pad($countToday, 3, '0', STR_PAD_LEFT);

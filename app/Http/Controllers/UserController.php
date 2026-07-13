@@ -59,6 +59,13 @@ class UserController extends Controller
                 'address'      => $request->address,
             ]);
 
+            if ($user->role === 'Dokter' || $user->role === 'dokter') {
+                \App\Models\Doctor::create([
+                    'user_id' => $user->id,
+                    'name'    => $user->name,
+                ]);
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => 'User berhasil dibuat',

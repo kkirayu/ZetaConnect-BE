@@ -29,6 +29,7 @@ use App\Http\Controllers\MedicalCertificateController;
 use App\Http\Controllers\StockMutationController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CashierDashboardController;
+use App\Http\Controllers\DoctorDashboardController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -170,6 +171,8 @@ Route::apiResource('pet-tips', PetTipController::class);
 
 
 Route::middleware('auth:sanctum')->prefix('doctor')->group(function () {
+    Route::get('/dashboard', [DoctorDashboardController::class, 'dashboard']);
+    
     // Diagnosis Dictionary Routes
     Route::apiResource('diagnoses', DiagnosisDictionaryController::class);
 
