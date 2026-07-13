@@ -46,20 +46,24 @@ class AppointmentController extends Controller
     {
         $date = $request->query('date');
         $doctorId = $request->query('doctor_id');
+        $serviceId = $request->query('service_id');
 
         if (!$date) {  
             return response()->json(['message' => 'Date is required'], 400);
         }
 
+        $estimatedSessions = 1;
+        if ($serviceId) {
+            $service = \App\Models\Service::find($serviceId);
+            if ($service) {
+                $estimatedSessions = $service->estimated_sessions;
+            }
+        }
+
         $dayOfWeek = date('l', strtotime($date));
         $dayMap = [
-            'Monday' => 'Senin',
-            'Tuesday' => 'Selasa',
-            'Wednesday' => 'Rabu',
-            'Thursday' => 'Kamis',
-            'Friday' => 'Jumat',
-            'Saturday' => 'Sabtu',
-            'Sunday' => 'Minggu',
+            'Monday' => 'Senin', 'Tuesday' => 'Selasa', 'Wednesday' => 'Rabu',
+            'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu', 'Sunday' => 'Minggu',
         ];
         $hariPraktik = $dayMap[$dayOfWeek];
 
@@ -73,39 +77,80 @@ class AppointmentController extends Controller
             'Sesi 7' => '14:00',
             'Sesi 8' => '15:00',
         ];
+        $sessionKeys = array_keys($sessionTimes);
+
+        $scheduledDoctorsQuery = DoctorSchedule::where('hari_praktik', $hariPraktik);
+        if ($doctorId) {
+            $scheduledDoctorsQuery->where('doctor_id', $doctorId);
+        }
+        $doctorSchedules = $scheduledDoctorsQuery->get();
+        
+        $doctorAvailableSessions = [];
+        foreach ($doctorSchedules as $ds) {
+            $doctorAvailableSessions[$ds->doctor_id][] = $ds->sesi_praktik;
+        }
+
+        $appointmentsQuery = Appointment::with('service')->whereDate('schedule_date', $date)->whereNotIn('status', ['Batal']);
+        if ($doctorId) {
+            $appointmentsQuery->where('doctor_id', $doctorId);
+        }
+        $appointments = $appointmentsQuery->get();
+
+        $doctorOccupiedSessions = [];
+        foreach ($appointments as $appt) {
+            $docId = $appt->doctor_id;
+            if (!$docId) continue;
+            
+            $startTime = substr($appt->schedule_time, 0, 5);
+            $startSessionIndex = array_search($startTime, array_values($sessionTimes));
+
+            if ($startSessionIndex !== false) {
+                $duration = $appt->service ? $appt->service->estimated_sessions : 1;
+                for ($i = 0; $i < $duration; $i++) {
+                    if (isset($sessionKeys[$startSessionIndex + $i])) {
+                        $doctorOccupiedSessions[$docId][] = $sessionKeys[$startSessionIndex + $i];
+                    }
+                }
+            }
+        }
 
         $availableTimes = [];
+        foreach ($sessionKeys as $startIndex => $sessionName) {
+            $time = $sessionTimes[$sessionName];
+            $canAccommodate = false;
 
-        foreach ($sessionTimes as $sessionName => $time) {
-            $totalScheduledDoctors = DoctorSchedule::where('hari_praktik', $hariPraktik)
-                                ->where('sesi_praktik', $sessionName)->count();
-            
-            if ($totalScheduledDoctors === 0) continue; 
+            foreach ($doctorAvailableSessions as $docId => $workingSessions) {
+                $doctorCanTakeIt = true;
+                for ($i = 0; $i < $estimatedSessions; $i++) {
+                    if (!isset($sessionKeys[$startIndex + $i])) {
+                        $doctorCanTakeIt = false;
+                        break;
+                    }
+                    $checkSession = $sessionKeys[$startIndex + $i];
+                    
+                    if (!in_array($checkSession, $workingSessions)) {
+                        $doctorCanTakeIt = false;
+                        break;
+                    }
 
-            $totalBooked = Appointment::whereDate('schedule_date', $date)
-                                        ->where('schedule_time', 'like', $time . '%')
-                                        ->whereNotIn('status', ['Batal'])
-                                        ->count();
+                    if (isset($doctorOccupiedSessions[$docId]) && in_array($checkSession, $doctorOccupiedSessions[$docId])) {
+                        $doctorCanTakeIt = false;
+                        break;
+                    }
+                }
 
-            if ($doctorId) {
-                $isDoctorScheduled = DoctorSchedule::where('hari_praktik', $hariPraktik)
-                                        ->where('sesi_praktik', $sessionName)
-                                        ->where('doctor_id', $doctorId)
-                                        ->exists();
-                
-                if (!$isDoctorScheduled) continue;
-
-                $isDoctorBooked = Appointment::whereDate('schedule_date', $date)
-                                        ->where('schedule_time', 'like', $time . '%')
-                                        ->where('doctor_id', $doctorId)
-                                        ->whereNotIn('status', ['Batal'])
-                                        ->exists();
-                
-                if ($isDoctorBooked) continue;
+                if ($doctorCanTakeIt) {
+                    $canAccommodate = true;
+                    break;
+                }
             }
 
-            if ($totalBooked < $totalScheduledDoctors) {
-                $availableTimes[] = $time;
+            if ($canAccommodate) {
+                $availableTimes[] = [
+                    'session' => $sessionName,
+                    'time' => $time,
+                    'label' => "$sessionName ($time WIB)"
+                ];
             }
         }
 
@@ -161,31 +206,74 @@ class AppointmentController extends Controller
                 '11:00' => 'Sesi 4', '12:00' => 'Sesi 5', '13:00' => 'Sesi 6',
                 '14:00' => 'Sesi 7', '15:00' => 'Sesi 8'
             ];
+            $sessionKeys = array_values($sessionTimes);
             
             $timeKey = substr($data['schedule_time'], 0, 5);
             $sessionName = $sessionTimes[$timeKey] ?? null;
 
             if ($sessionName) {
-                $scheduledDoctors = \App\Models\DoctorSchedule::where('hari_praktik', $hariPraktik)
-                                        ->where('sesi_praktik', $sessionName)
-                                        ->pluck('doctor_id');
+                $service = \App\Models\Service::find($data['service_id']);
+                $estimatedSessions = $service ? $service->estimated_sessions : 1;
+                $startIndex = array_search($sessionName, $sessionKeys);
 
-                if ($scheduledDoctors->isNotEmpty()) {
-                    foreach ($scheduledDoctors as $docId) {
-                        $isBooked = Appointment::whereDate('schedule_date', $data['schedule_date'])
-                            ->where('schedule_time', 'like', $timeKey . '%')
-                            ->where('doctor_id', $docId)
-                            ->whereNotIn('status', ['Batal'])
-                            ->exists();
-                            
-                        if (!$isBooked) {
-                            $data['doctor_id'] = $docId;
-                            break;
+                $doctorSchedules = \App\Models\DoctorSchedule::where('hari_praktik', $hariPraktik)->get();
+                $doctorAvailableSessions = [];
+                foreach ($doctorSchedules as $ds) {
+                    $doctorAvailableSessions[$ds->doctor_id][] = $ds->sesi_praktik;
+                }
+
+                $appointments = Appointment::with('service')->whereDate('schedule_date', $data['schedule_date'])->whereNotIn('status', ['Batal'])->get();
+                $doctorOccupiedSessions = [];
+                foreach ($appointments as $appt) {
+                    $docId = $appt->doctor_id;
+                    if (!$docId) continue;
+                    $startTime = substr($appt->schedule_time, 0, 5);
+                    $sName = $sessionTimes[$startTime] ?? null;
+                    $sIndex = array_search($sName, $sessionKeys);
+                    if ($sIndex !== false) {
+                        $dur = $appt->service ? $appt->service->estimated_sessions : 1;
+                        for ($i = 0; $i < $dur; $i++) {
+                            if (isset($sessionKeys[$sIndex + $i])) {
+                                $doctorOccupiedSessions[$docId][] = $sessionKeys[$sIndex + $i];
+                            }
                         }
                     }
                 }
+
+                $assignedDocId = null;
+                foreach ($doctorAvailableSessions as $docId => $workingSessions) {
+                    $doctorCanTakeIt = true;
+                    for ($i = 0; $i < $estimatedSessions; $i++) {
+                        if (!isset($sessionKeys[$startIndex + $i])) {
+                            $doctorCanTakeIt = false;
+                            break;
+                        }
+                        $checkSession = $sessionKeys[$startIndex + $i];
+                        
+                        if (!in_array($checkSession, $workingSessions)) {
+                            $doctorCanTakeIt = false;
+                            break;
+                        }
+
+                        if (isset($doctorOccupiedSessions[$docId]) && in_array($checkSession, $doctorOccupiedSessions[$docId])) {
+                            $doctorCanTakeIt = false;
+                            break;
+                        }
+                    }
+
+                    if ($doctorCanTakeIt) {
+                        $assignedDocId = $docId;
+                        break;
+                    }
+                }
+
+                if ($assignedDocId) {
+                    $data['doctor_id'] = $assignedDocId;
+                } else {
+                    return response()->json(['message' => 'Tidak ada dokter yang tersedia untuk jadwal ini.'], 422);
+                }
             }
-        }        
+        }
         if (empty($data['queue_number'])) {
             $countToday = Appointment::whereDate('schedule_date', $data['schedule_date'])->count() + 1;
             $data['queue_number'] = 'Q-' . date('Ymd', strtotime($data['schedule_date'])) . '-' . str_pad($countToday, 3, '0', STR_PAD_LEFT);

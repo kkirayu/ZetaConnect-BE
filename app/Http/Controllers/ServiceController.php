@@ -46,6 +46,7 @@ class ServiceController extends Controller
             'category' => 'required|in:Medis,Vaksin,Grooming,Fasilitas',
             'price'    => 'required|numeric|min:0',
             'status'   => 'nullable|in:Tersedia,Tidak Tersedia',
+            'estimated_sessions' => 'nullable|integer|min:1',
         ]);
 
         if ($validator->fails()) {
@@ -58,6 +59,7 @@ class ServiceController extends Controller
 
         $data           = $validator->validated();
         $data['status'] = $data['status'] ?? 'Tersedia';
+        $data['estimated_sessions'] = $data['estimated_sessions'] ?? 1;
 
         $service = Service::create($data);
 
@@ -107,6 +109,7 @@ class ServiceController extends Controller
             'category' => 'sometimes|in:Medis,Vaksin,Grooming,Fasilitas',
             'price'    => 'sometimes|numeric|min:0',
             'status'   => 'sometimes|in:Tersedia,Tidak Tersedia',
+            'estimated_sessions' => 'sometimes|integer|min:1',
         ]);
 
         if ($validator->fails()) {
