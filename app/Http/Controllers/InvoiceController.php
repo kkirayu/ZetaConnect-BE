@@ -82,7 +82,7 @@ class InvoiceController extends Controller
             $productsToBill = [];
             $eReceipts = \App\Models\EReceipt::where('pet_id', $apt->pet_id)
                 ->where('status', 'Completed')
-                ->whereDate('created_at', $apt->schedule_date)
+                ->whereDate('created_at', $apt->created_at->format('Y-m-d'))
                 ->with(['items', 'doctor'])
                 ->get();
 
