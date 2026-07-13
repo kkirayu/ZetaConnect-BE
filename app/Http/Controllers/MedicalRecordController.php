@@ -74,6 +74,14 @@ class MedicalRecordController extends Controller
 
         $record = $this->service->create($data);
 
+        if (isset($data['appointment_id'])) {
+            $appointment = \App\Models\Appointment::find($data['appointment_id']);
+            if ($appointment) {
+                $appointment->status = 'Selesai';
+                $appointment->save();
+            }
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Rekam medis berhasil dibuat',
