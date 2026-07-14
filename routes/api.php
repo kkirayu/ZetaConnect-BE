@@ -161,6 +161,8 @@ Route::middleware(['auth:sanctum', 'role:apoteker,farmasi,Apoteker,Farmasi,admin
 Route::middleware(['auth:sanctum', 'role:kasir,Kasir,admin,Admin'])->prefix('cashier')->group(function () {
     Route::get('/dashboard', [CashierDashboardController::class, 'dashboard']);
     Route::get('/pending-billing', [InvoiceController::class, 'pendingBilling']);
+    Route::get('/shift/summary', [CashierDashboardController::class, 'shiftSummary']);
+    Route::post('/shift/close', [CashierDashboardController::class, 'closeShift']);
 });
 
 // Other Master Data Routes

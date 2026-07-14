@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Invoice;
 use App\Models\Appointment;
+use App\Models\CashierShift;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -139,6 +140,90 @@ class CashierDashboardController extends Controller
                 'hourly_revenue' => $hourlyRevenue,
                 'queue_list' => $queueList,
             ]
+        ]);
+    }
+
+    public function shiftSummary(Request $request)
+    {
+        $user = $request->user();
+        $today = Carbon::today();
+
+        // Cari shift terbuka untuk kasir ini
+        $shift = CashierShift::where('cashier_id', $user->id)
+            ->where('status', 'open')
+            ->first();
+
+        $startingCash = $shift ? $shift->starting_cash : 500000;
+        $startTime = $shift ? $shift->start_time : clone $today;
+
+        $invoices = Invoice::with(['owner', 'payments'])
+            ->where('created_at', '>=', $startTime)
+            ->where('status', 'Paid')
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        $transactions = [];
+        foreach ($invoices as $inv) {
+            $method = 'Tunai';
+            if ($inv->payments->count() > 0) {
+                $rawMethod = $inv->payments->first()->payment_method;
+                if (strtolower($rawMethod) === 'qris' || strtolower($rawMethod) === 'transfer') {
+                    $method = 'QRIS';
+                }
+            }
+
+            $ownerName = $inv->owner ? $inv->owner->name : 'Unknown';
+            
+            $transactions[] = [
+                'id' => 'TRX-' . str_pad($inv->id, 4, '0', STR_PAD_LEFT),
+                'time' => $inv->created_at->format('H:i'),
+                'invoice' => '#INV-' . str_pad($inv->id, 4, '0', STR_PAD_LEFT),
+                'customer' => $ownerName,
+                'method' => $method,
+                'total' => (float) $inv->total_amount
+            ];
+        }
+
+        return response()->json([
+            'success' => true,
+            'transactions' => $transactions,
+            'starting_cash' => $startingCash
+        ]);
+    }
+
+    public function closeShift(Request $request)
+    {
+        $request->validate([
+            'actual_cash' => 'required|numeric',
+            'expected_cash' => 'required|numeric',
+            'difference' => 'required|numeric',
+            'total_revenue' => 'required|numeric',
+            'cash_revenue' => 'required|numeric',
+            'qris_revenue' => 'required|numeric'
+        ]);
+
+        $user = $request->user();
+        
+        $shift = CashierShift::where('cashier_id', $user->id)
+            ->where('status', 'open')
+            ->first();
+
+        if (!$shift) {
+            $shift = new CashierShift();
+            $shift->cashier_id = $user->id;
+            $shift->start_time = Carbon::today();
+            $shift->starting_cash = 500000;
+        }
+
+        $shift->end_time = Carbon::now();
+        $shift->system_revenue = $request->total_revenue;
+        $shift->physical_cash = $request->actual_cash;
+        $shift->status = 'closed';
+        $shift->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Shift berhasil ditutup'
         ]);
     }
 }
